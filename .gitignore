@@ -4,3 +4,4 @@ private/storage/logs/*
 private/storage/ratelimit/*
 !private/storage/ratelimit/.gitignore
 .DS_Store
+private/storage/cron.lock
