@@ -1,0 +1,6 @@
+private/config.php
+private/storage/logs/*
+!private/storage/logs/.gitignore
+private/storage/ratelimit/*
+!private/storage/ratelimit/.gitignore
+.DS_Store

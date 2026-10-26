@@ -1,0 +1,133 @@
+<?php
+/**
+ * Mars Pillow — site configuration.
+ *
+ * Copy this file to config.php (same folder) and fill in your values.
+ * This folder ("private") must stay OUTSIDE public_html so nobody can download it.
+ *
+ * Switching from test to live: change 'mode' => 'test' to 'mode' => 'live'
+ * and make sure the live keys below are filled in. Nothing else needs to change.
+ */
+return [
+
+    // 'test' = Stripe test keys + PayPal sandbox + errors shown on screen.
+    // 'live' = real payments, errors only written to the log file.
+    'mode' => 'test',
+
+    'site' => [
+        'name'             => 'Mars Pillow',
+        'base_url'         => 'https://www.example.com',   // [TODO] your domain, no trailing slash
+        'support_email'    => 'support@example.com',        // [TODO]
+        'business_name'    => 'Mars Pillow LLC',            // [TODO] legal business name
+        'business_address' => '[TODO] Street, City, State ZIP, USA',
+        'trial_nights'     => 60,
+        'warranty_years'   => 3,
+        'shipping_days'    => '[TODO] 3–7',                 // business days, shown on the site
+        'currency'         => 'USD',
+    ],
+
+    // Products and bundles. Prices are ALWAYS taken from here on the server,
+    // never from the browser. Prices are in whole US dollars.
+    'offers' => [
+        'mars-pillow' => [
+            'id' => 'single', 'name' => 'Mars Pillow', 'price' => 99, 'compare_at_price' => null,
+            'short' => 'One contoured memory foam pillow with a washable cover.',
+            'includes' => ['1 Mars Pillow', 'Washable cover included'],
+            'units' => ['p'], 'badge' => null, 'image' => 'assets/img/product-single.jpg',
+            'amazon_url' => '', // [TODO] paste the Amazon listing link; leave empty to hide the button
+        ],
+        'mars-sleep-pack' => [
+            'id' => 'sleep-pack', 'name' => 'Mars Sleep Pack', 'price' => 129, 'compare_at_price' => 138,
+            'short' => 'One pillow plus a spare Mars Cover, so one is always fresh.',
+            'includes' => ['1 Mars Pillow', '1 extra Mars Cover'],
+            'units' => ['p', 'c'], 'badge' => null, 'image' => 'assets/img/product-sleep-pack.jpg',
+            'amazon_url' => '',
+        ],
+        'mars-twin-pack' => [
+            'id' => 'twin-pack', 'name' => 'Mars Twin Pack', 'price' => 179, 'compare_at_price' => 198,
+            'short' => 'Two pillows, one for each side of the bed.',
+            'includes' => ['2 Mars Pillows', 'One for each side of the bed'],
+            'units' => ['p', 'p'], 'badge' => 'Most Popular', 'image' => 'assets/img/product-twin-pack.jpg',
+            'amazon_url' => '',
+        ],
+        'interstellar-suite' => [
+            'id' => 'interstellar', 'name' => 'Interstellar Suite', 'price' => 229, 'compare_at_price' => 276,
+            'short' => 'Two pillows and two spare covers for the whole bed.',
+            'includes' => ['2 Mars Pillows', '2 extra Mars Covers'],
+            'units' => ['p', 'p', 'c', 'c'], 'badge' => 'Best Value', 'image' => 'assets/img/product-interstellar.jpg',
+            'amazon_url' => '',
+        ],
+    ],
+    'default_offer' => 'mars-twin-pack',
+
+    // Product details shown on the product page. Fill in to match the real product.
+    'product' => [
+        'layers' => [
+            ['name' => 'Breathable cover', 'text' => 'Soft knit you can zip off and wash. [TODO fabric]'],
+            ['name' => 'Cooling layer',    'text' => 'Helps move heat away from your face and neck. [TODO]'],
+            ['name' => 'Memory foam core', 'text' => 'Slow-recovery foam that softens under your head and stays firm under your neck.'],
+            ['name' => 'Contour base',     'text' => 'The wave shape that gives the pillow its two heights. [TODO]'],
+        ],
+        'size'      => '[TODO] 24 x 14 in, 4.3 in / 3.5 in contour heights',
+        'weight'    => '[TODO] 3.3 lb',
+        'materials' => '[TODO] Cover: 60% polyester, 40% viscose. Core: CertiPUR-US® certified memory foam (only if certified).',
+        'care'      => 'Unzip the cover and machine wash it cold on a gentle cycle, then air dry. Do not wash the foam core. Air it out instead. [TODO confirm]',
+    ],
+
+    'db' => [
+        // Hostinger: hPanel > Databases > MySQL Databases
+        'dsn'  => 'mysql:host=localhost;dbname=[TODO]_marspillow;charset=utf8mb4',
+        'user' => '[TODO]',
+        'pass' => '[TODO]',
+    ],
+
+    'stripe' => [
+        'test' => [
+            'secret_key'     => 'sk_test_[TODO]',
+            'webhook_secret' => 'whsec_[TODO]',
+        ],
+        'live' => [
+            'secret_key'     => 'sk_live_[TODO]',
+            'webhook_secret' => 'whsec_[TODO]',
+        ],
+    ],
+
+    'paypal' => [
+        'test' => [ // sandbox app from developer.paypal.com
+            'client_id' => '[TODO]',
+            'secret'    => '[TODO]',
+        ],
+        'live' => [
+            'client_id' => '[TODO]',
+            'secret'    => '[TODO]',
+        ],
+    ],
+
+    'mail' => [
+        'from_email'  => 'orders@example.com',   // [TODO] an address on your domain
+        'from_name'   => 'Mars Pillow',
+        'admin_email' => 'you@example.com',      // [TODO] where new-order and contact emails go
+        // SMTP (recommended). Hostinger: hPanel > Emails > your address > Configuration.
+        // If 'enabled' is false, PHP mail() is used instead.
+        'smtp' => [
+            'enabled'  => false,
+            'host'     => 'smtp.hostinger.com',
+            'port'     => 465,
+            'secure'   => 'ssl', // 'ssl' for 465, 'tls' for 587
+            'user'     => 'orders@example.com',
+            'pass'     => '[TODO]',
+        ],
+    ],
+
+    'admin' => [
+        // Create a hash: run  php -r "echo password_hash('YourStrongPassword', PASSWORD_DEFAULT);"
+        // or open /admin/make-hash once (only works in test mode). Paste the result here.
+        'password_hash' => '[TODO]',
+    ],
+
+    'tracking' => [
+        // Loaded only after the visitor accepts cookies. Leave empty to turn off.
+        'ga4_id'        => '',  // e.g. G-XXXXXXXXXX
+        'meta_pixel_id' => '',  // e.g. 1234567890
+    ],
+];
