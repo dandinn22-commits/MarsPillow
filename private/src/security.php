@@ -38,14 +38,15 @@ function mp_send_security_headers(): void
 {
     $n = csp_nonce();
     $paypal = 'https://www.paypal.com https://*.paypal.com https://*.paypalobjects.com';
+    $gads = 'https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://google.com';
     $csp = [
         "default-src 'self'",
-        "script-src 'self' 'nonce-$n' https://cdnjs.cloudflare.com $paypal https://www.googletagmanager.com https://connect.facebook.net",
+        "script-src 'self' 'nonce-$n' https://cdnjs.cloudflare.com $paypal https://www.googletagmanager.com $gads https://connect.facebook.net",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
-        "img-src 'self' data: blob: $paypal https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com",
-        "connect-src 'self' $paypal https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://www.facebook.com https://connect.facebook.net",
-        "frame-src $paypal",
+        "img-src 'self' data: blob: $paypal https://www.google-analytics.com https://www.googletagmanager.com $gads https://www.facebook.com",
+        "connect-src 'self' $paypal https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com $gads https://pagead2.googlesyndication.com https://www.facebook.com https://connect.facebook.net",
+        "frame-src $paypal https://td.doubleclick.net https://www.googletagmanager.com",
         "form-action 'self' https://checkout.stripe.com",
         "base-uri 'self'",
         "object-src 'none'",

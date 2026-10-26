@@ -135,8 +135,8 @@ return [
         'meta_capi_token' => '',
         'meta_test_event_code' => '', // e.g. TEST12345 while testing in Events Manager; empty when live
         // Google Ads purchase conversion (with enhanced conversions). Google Ads > Goals > Conversions.
-        'google_ads_id'    => '',  // e.g. AW-123456789
-        'google_ads_label' => '',  // e.g. AbCdEfGhIjK
+        'google_ads_id'    => 'AW-18539204074',
+        'google_ads_label' => '',  // [TODO] label of the Purchase conversion action
     ],
 
     // Discount codes. 'percent' off the order. The popup gives out 'popup_code'.
