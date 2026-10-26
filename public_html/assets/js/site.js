@@ -90,10 +90,12 @@
     load() {
       if (this.ready) return; this.ready = true;
       const t = MP.tracking || {};
-      if (t.ga4) {
-        const s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(t.ga4); s.nonce = MP.nonce; document.head.appendChild(s);
+      if (t.ga4 || t.ads) {
+        const s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(t.ga4 || t.ads); s.nonce = MP.nonce; document.head.appendChild(s);
         window.dataLayer = window.dataLayer || []; window.gtag = function () { dataLayer.push(arguments); };
-        gtag('js', new Date()); gtag('config', t.ga4);
+        gtag('js', new Date());
+        if (t.ga4) gtag('config', t.ga4);
+        if (t.ads) gtag('config', t.ads, { allow_enhanced_conversions: true });
       }
       if (t.pixel) {
         !function (f, b, e, v, n, t2, s2) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t2 = b.createElement(e); t2.async = !0; t2.src = v; t2.nonce = MP.nonce; s2 = b.getElementsByTagName(e)[0]; s2.parentNode.insertBefore(t2, s2); }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
@@ -108,12 +110,27 @@
     purchase(p) {
       if (!this.ready || !p) return;
       const key = 'mp_tracked_' + p.id; if (store.get(key)) return; store.set(key, '1');
-      if (window.gtag) gtag('event', 'purchase', { transaction_id: p.id, currency: 'USD', value: p.value, items: p.items.map(i => ({ item_id: i.id, item_name: i.name, price: i.price, quantity: i.qty })) });
-      if (window.fbq) fbq('track', 'Purchase', { currency: 'USD', value: p.value, content_ids: p.items.map(i => i.id), content_type: 'product' });
+      const t = MP.tracking || {};
+      if (window.gtag) {
+        gtag('event', 'purchase', { transaction_id: p.id, currency: 'USD', value: p.value, items: p.items.map(i => ({ item_id: i.id, item_name: i.name, price: i.price, quantity: i.qty })) });
+        if (t.ads && t.adsLabel) { // Google Ads purchase with enhanced conversions (Google hashes the email)
+          if (p.email) gtag('set', 'user_data', { email: p.email.trim().toLowerCase() });
+          gtag('event', 'conversion', { send_to: t.ads + '/' + t.adsLabel, value: p.value, currency: 'USD', transaction_id: p.id });
+        }
+      }
+      // same event id as the server event, so Meta counts the purchase once
+      if (window.fbq) fbq('track', 'Purchase', { currency: 'USD', value: p.value, content_ids: p.items.map(i => i.id), content_type: 'product' }, { eventID: p.id });
     },
   };
   const consent = $('#consent');
-  const setConsent = v => { store.set('mp_consent', v); if (consent) consent.hidden = true; if (v === 'yes') track.load(); };
+  const setConsent = v => {
+    store.set('mp_consent', v);
+    // a cookie too, so the server knows whether it may send the purchase to Meta
+    document.cookie = 'mp_consent=' + v + ';path=/;max-age=31536000;SameSite=Lax' + (location.protocol === 'https:' ? ';Secure' : '');
+    if (consent) consent.hidden = true;
+    if (v === 'yes') track.load();
+    document.dispatchEvent(new Event('mp:consent'));
+  };
   const c = store.get('mp_consent');
   if (c === 'yes') track.load(); else if (!c && consent) consent.hidden = false;
   $$('[data-consent]').forEach(b => b.addEventListener('click', () => setConsent(b.dataset.consent)));
@@ -148,7 +165,8 @@
           <div><div class="ln">${esc(l.name)}</div><div class="lp">${fmt(l.price)} each</div>
           <div class="qty"><button type="button" aria-label="Decrease quantity of ${esc(l.name)}" data-a="dec">−</button><span aria-live="polite">${l.qty}</span><button type="button" aria-label="Increase quantity of ${esc(l.name)}" data-a="inc">+</button></div></div>
           <div style="display:grid;justify-items:end;gap:6px"><strong style="font-variant-numeric:tabular-nums">${fmt(l.line)}</strong><button type="button" class="remove" data-a="rm">Remove<span class="sr-only"> ${esc(l.name)}</span></button></div></li>`).join('');
-    $('#subtotal').textContent = fmt(c.subtotal);
+    $('#subtotal').textContent = fmt(c.total);
+    const sl = $('#subtotalLabel'); if (sl) sl.textContent = c.coupon ? `Total with ${c.coupon.code}` : 'Subtotal';
     const co = $('#checkoutBtn'); if (co) co.hidden = !c.lines.length;
   }
   let lastFocus = null;
@@ -259,6 +277,45 @@
     update(false);
   });
   window.MPUI = { toast, track, api, renderCart, openCart, fmt, REDUCED, FINE, hasGsap, hasST };
+
+  /* ---------------- Email capture: popup + quiz form ---------------- */
+  const post = async (url, body) => {
+    const res = await fetch(url, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': MP.csrf || '' }, body: JSON.stringify(body) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+    return data;
+  };
+  $$('form[data-subscribe]').forEach(f => f.addEventListener('submit', async e => {
+    e.preventDefault();
+    const msg = f.querySelector('.sub-msg'), btn = f.querySelector('button[type=submit]'), email = f.querySelector('input[name=email]');
+    btn.disabled = true; msg.textContent = '';
+    try {
+      const d = await post('/api/subscribe', { email: email.value, source: f.dataset.subscribe, quiz: f.dataset.quiz || '', website: (f.querySelector('input[name=website]') || {}).value || '' });
+      store.set('mp_popup_seen', '1');
+      f.innerHTML = `<p class="code-box">Your code: <b>${esc(d.code)}</b></p><p class="fine">We also sent it to your email.</p><button type="button" class="btn btn-primary btn-block" data-apply>Add the code to my cart</button><p class="fine sub-msg" role="status"></p>`;
+      f.querySelector('[data-apply]').addEventListener('click', async ev => {
+        try { renderCart(await post('/api/coupon', { code: d.code })); ev.target.textContent = 'Code added ✓'; ev.target.disabled = true; } catch (err) { f.querySelector('.sub-msg').textContent = err.message; }
+      });
+      f.querySelector('[data-apply]').focus();
+    } catch (err) { msg.textContent = err.message; email.setAttribute('aria-invalid', 'true'); btn.disabled = false; }
+  }));
+  const popup = $('#popup');
+  if (popup && !store.get('mp_popup_seen')) {
+    let shown = false, prevFocus = null;
+    const close = () => { popup.hidden = true; store.set('mp_popup_seen', '1'); if (prevFocus) prevFocus.focus(); };
+    const show = () => {
+      if (shown || store.get('mp_popup_seen') || (consent && !consent.hidden) || (drawer && drawer.classList.contains('open'))) return;
+      shown = true; prevFocus = document.activeElement; popup.hidden = false;
+      setTimeout(() => popup.querySelector('input[type=email]').focus(), 50);
+      if (hasGsap && !REDUCED) gsap.from('.popup-card', { y: 30, opacity: 0, scale: .96, duration: .5, ease: 'power3.out' });
+    };
+    setTimeout(show, 25000);
+    if (FINE) document.addEventListener('mouseout', e => { if (!e.relatedTarget && e.clientY < 10) show(); });
+    document.addEventListener('mp:consent', () => setTimeout(show, 12000));
+    $$('[data-popup-close]', popup).forEach(b => b.addEventListener('click', close));
+    popup.addEventListener('click', e => { if (e.target === popup) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !popup.hidden) close(); });
+  }
 
   /* ---------------- Full cart page: animate removals (forms still work without JS) ---------------- */
   // (handled by normal form posts)

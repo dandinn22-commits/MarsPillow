@@ -63,6 +63,7 @@ function paypal_create_order(array $order): string
                 'breakdown' => [
                     'item_total' => ['currency_code' => 'USD', 'value' => number_format($order['subtotal_cents'] / 100, 2, '.', '')],
                     'shipping'   => ['currency_code' => 'USD', 'value' => number_format($order['shipping_cents'] / 100, 2, '.', '')],
+                    'discount'   => ['currency_code' => 'USD', 'value' => number_format($order['discount_cents'] / 100, 2, '.', '')],
                 ],
             ],
             'items' => $items,

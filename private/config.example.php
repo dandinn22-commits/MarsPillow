@@ -129,5 +129,40 @@ return [
         // Loaded only after the visitor accepts cookies. Leave empty to turn off.
         'ga4_id'        => '',  // e.g. G-XXXXXXXXXX
         'meta_pixel_id' => '',  // e.g. 1234567890
+        // Meta Conversions API: sends purchases from the server too, so Meta still counts them
+        // when the browser blocks the pixel. Events Manager > your pixel > Settings > Generate access token.
+        'meta_capi_token' => '',
+        'meta_test_event_code' => '', // e.g. TEST12345 while testing in Events Manager; empty when live
+        // Google Ads purchase conversion (with enhanced conversions). Google Ads > Goals > Conversions.
+        'google_ads_id'    => '',  // e.g. AW-123456789
+        'google_ads_label' => '',  // e.g. AbCdEfGhIjK
+    ],
+
+    // Discount codes. 'percent' off the order. The popup gives out 'popup_code'.
+    'coupons' => [
+        'WELCOME10' => ['percent' => 10, 'label' => '10% off your first order'],
+    ],
+    'popup_code' => 'WELCOME10',
+
+    // Emails sent by the scheduled task (cron), see DEPLOY.md step 11
+    'automations' => [
+        'review_request_days' => 21,   // days after shipping to ask for a review
+        'cart_reminder_hours' => 3,    // hours after someone leaves a cart to remind them
+    ],
+
+    // "Mars vs. the big brand" table on the product page and the ad landing page.
+    // Only facts you can prove. Update the date and prices whenever you check them.
+    'comparison' => [
+        'brand'      => 'TEMPUR-Neck',
+        'checked_on' => '2026-10-26',
+        'source_url' => 'https://www.tomsguide.com/mattresses/pillows-bedding/tempur-pedic-tempur-neck-pillow-review',
+        'rows' => [
+            ['Price (one pillow)', '$99', '$119–$159 list price'],
+            ['Sleep trial', '60 nights', 'No trial'],
+            ['Warranty', '3 years', '5 years'],
+            ['Heights', 'Two heights in one pillow', 'Choose one of 3 sizes'],
+            ['Cover', 'Zip-off, machine washable', 'Removable knit cover'],
+            ['Shipping', 'Free in the US', 'Free in the US'],
+        ],
     ],
 ];

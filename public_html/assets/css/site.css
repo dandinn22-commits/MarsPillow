@@ -502,3 +502,78 @@ code { font-family: var(--font-mono); font-size: .9em; background: rgba(245,243,
 .tablist { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
 .tablist::-webkit-scrollbar { display: none; }
 .tablist button { white-space: nowrap; flex: none; }
+
+/* ===================== Reviews, quiz, popup, landing page ===================== */
+.stars { color: var(--mars); letter-spacing: 2px; font-size: 1.05rem; }
+.stars .off { color: rgba(245,243,255,.2); }
+.rating-line { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--mist); text-decoration: none; margin: 0; }
+.review-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.review-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; background: rgba(28,37,65,.75); display: grid; gap: 10px; align-content: start; min-width: 0; }
+.review-card h3 { font-size: 1.35rem; }
+.review-card p { color: var(--mist); margin: 0; font-size: .97rem; }
+.review-card footer { font-size: .85rem; color: var(--faint); }
+@media (max-width: 860px) { .review-grid { grid-template-columns: 1fr; } }
+.compare-note { margin-top: 12px; }
+
+.rating-field { border: 0; padding: 0; margin: 0; }
+.rating-field legend { font-weight: 600; margin-bottom: 6px; }
+.rating-input { display: inline-flex; flex-direction: row-reverse; gap: 4px; }
+.rating-input input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.rating-input label { font-size: 2.2rem; color: rgba(245,243,255,.25); cursor: pointer; line-height: 1; transition: color .15s; }
+.rating-input input:checked ~ label, .rating-input label:hover, .rating-input label:hover ~ label { color: var(--mars); }
+.rating-input input:focus-visible + label { outline: 2px solid var(--mars); outline-offset: 2px; border-radius: 4px; }
+
+.quiz { gap: 22px; }
+.quiz-bar { height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.quiz-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--nebula), var(--mars)); transition: width .4s; }
+.quiz-step { border: 0; padding: 0; margin: 0; display: grid; gap: 14px; min-width: 0; }
+.quiz-step legend { font-family: var(--font-display); font-size: 1.9rem; line-height: 1.15; margin-bottom: 14px; }
+.q-num { font-family: var(--font-mono); font-size: .8rem; color: var(--mars-soft); vertical-align: middle; margin-right: 6px; }
+.q-opts { display: grid; gap: 10px; }
+.q-opt { display: block; cursor: pointer; }
+.q-opt input { position: absolute; opacity: 0; }
+.q-opt span { display: block; padding: 16px 18px; border-radius: 14px; border: 1px solid var(--line); background: rgba(11,19,43,.6); font-weight: 500; transition: border-color .2s, background .2s; }
+.q-opt:hover span { border-color: rgba(245,243,255,.35); }
+.q-opt input:checked + span { border-color: var(--mars); background: rgba(232,116,59,.1); }
+.q-opt input:focus-visible + span { outline: 2px solid var(--mars); outline-offset: 2px; }
+.quiz-back { justify-self: start; }
+.quiz-result h2 { font-size: clamp(2.2rem, 5vw, 3.2rem); }
+.quiz-result h2 em { color: var(--mars-soft); }
+.quiz-result p { color: var(--mist); margin: 0; }
+.res-offer { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px; border-radius: 16px; border: 1px solid rgba(232,116,59,.4); background: rgba(232,116,59,.07); }
+.res-offer div { display: grid; gap: 2px; }
+.res-offer b { font-family: var(--font-display); font-size: 1.5rem; font-weight: 400; }
+.res-offer strong { font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+.inline-sub { display: grid; gap: 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+.inline-sub label { font-weight: 600; }
+.inline-row { display: flex; gap: 8px; }
+.inline-row input, .popup input[type=email], .coupon-row input { flex: 1; min-width: 0; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(245,243,255,.22); background: rgba(11,19,43,.7); color: var(--star); font: inherit; }
+.code-box { font-size: 1.2rem; margin: 0; padding: 14px; border: 1px dashed var(--mars); border-radius: 12px; text-align: center; }
+.code-box b { color: var(--mars-soft); letter-spacing: .08em; }
+
+.coupon-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 0; }
+.coupon-row .remove { margin-left: auto; }
+.totals .disc dd, .totals .disc dt { color: var(--ok); }
+
+.popup { position: fixed; inset: 0; z-index: 88; background: rgba(5,8,20,.7); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: grid; place-items: center; padding: 16px; }
+.popup-card { position: relative; width: min(440px, 100%); border-radius: 22px; border: 1px solid var(--line); background: linear-gradient(160deg, rgba(91,75,138,.6), var(--midnight)); padding: 32px 28px 22px; display: grid; gap: 14px; justify-items: center; text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+.popup-card h2 { font-size: 2.2rem; }
+.popup-card p { margin: 0; color: var(--mist); }
+.popup-card form { width: 100%; display: grid; gap: 10px; }
+.popup-close { position: absolute; top: 12px; right: 12px; }
+.popup .big-planet { width: 64px; height: 64px; }
+
+.page-lp .nav-links, .page-lp .menu-btn { display: none; }
+.lp-hero { padding-block: calc(110px + env(safe-area-inset-top, 0px)) 60px; position: relative; z-index: 1; }
+.lp-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; }
+.lp-copy { display: grid; gap: 20px; justify-items: start; }
+.lp-title { font-size: clamp(2.5rem, 5.4vw, 4.4rem); }
+.lp-title em { color: var(--mars-soft); }
+.lp-points { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; color: var(--mist); }
+.lp-points li::before { content: "✓ "; color: var(--ok); }
+.lp-points b { color: var(--star); }
+.lp-media img, .lp-media video { width: 100%; height: auto; border-radius: var(--radius); display: block; }
+.btn-lg { padding: 18px 30px; font-size: 1.08rem; }
+@media (max-width: 860px) { .lp-grid { grid-template-columns: 1fr; } .lp-media { order: -1; } }
+.quiz-info { margin-top: 40px; }
+.quiz, .quiz-result { margin-top: 28px; }

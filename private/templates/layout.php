@@ -45,7 +45,8 @@ $f = flash();
 window.MP = <?= json_encode([
     'csrf' => csrf_token(),
     'offers' => offers_for_js(),
-    'tracking' => ['ga4' => (string)cfg('tracking.ga4_id'), 'pixel' => (string)cfg('tracking.meta_pixel_id')],
+    'tracking' => ['ga4' => (string)cfg('tracking.ga4_id'), 'pixel' => (string)cfg('tracking.meta_pixel_id'),
+                   'ads' => (string)cfg('tracking.google_ads_id'), 'adsLabel' => (string)cfg('tracking.google_ads_label')],
     'nonce' => $n,
 ], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?>;
 </script>
@@ -149,13 +150,32 @@ window.MP = <?= json_encode([
   <header><h2>Your cart</h2><button class="icon-btn" id="closeCart" type="button" aria-label="Close cart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
   <ul class="lines" id="lines"></ul>
   <div class="drawer-foot">
-    <div class="subtotal"><span>Subtotal</span><span id="subtotal">$0</span></div>
+    <div class="subtotal"><span id="subtotalLabel">Subtotal</span><span id="subtotal">$0</span></div>
     <p class="fine">Free shipping within the US. Taxes calculated at checkout.</p>
     <a class="btn btn-primary" id="checkoutBtn" href="/checkout">Go to secure checkout</a>
     <a class="btn btn-ghost" href="/cart">View full cart</a>
   </div>
 </aside>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<?php if (!in_array($meta['key'] ?? '', ['cart', 'checkout', 'success', 'cancelled', 'review'], true) && cfg('popup_code')): $pc = coupon_find((string)cfg('popup_code')); ?>
+<div class="popup" id="popup" role="dialog" aria-modal="true" aria-labelledby="popupTitle" hidden>
+  <div class="popup-card">
+    <button class="icon-btn popup-close" type="button" data-popup-close aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <svg class="big-planet" aria-hidden="true" width="64" height="64"><use href="#planet"/></svg>
+    <h2 id="popupTitle">Get <?= e(strtolower($pc['label'] ?? 'a discount')) ?></h2>
+    <p>Plus tips for your first nights on a contour pillow. No spam, unsubscribe anytime.</p>
+    <form data-subscribe="popup" novalidate>
+      <label class="sr-only" for="pp-email">Email address</label>
+      <input id="pp-email" type="email" name="email" autocomplete="email" placeholder="you@example.com" required>
+      <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button class="btn btn-primary btn-block" type="submit">Send my code</button>
+      <p class="fine sub-msg" role="status"></p>
+    </form>
+    <button class="link-btn fine" type="button" data-popup-close>No thanks</button>
+  </div>
+</div>
+<?php endif; ?>
 
 <div class="consent" id="consent" role="dialog" aria-labelledby="consentTitle" hidden>
   <p id="consentTitle"><strong>Cookies on Mars Pillow.</strong> We use cookies to see how the site is used and to measure our ads. Essential cookies (like your cart) are always on. <a href="/privacy-policy">Privacy Policy</a></p>
@@ -168,10 +188,20 @@ window.MP = <?= json_encode([
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<?php if (!empty($meta['three'])): ?><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script><?php endif; ?>
 <script src="<?= e(asset('assets/js/site.js')) ?>" defer></script>
-<?php foreach ($meta['scripts'] ?? [] as $js): ?><script src="<?= e(asset($js)) ?>" defer></script>
-<?php endforeach; ?>
+<script nonce="<?= e($n) ?>">
+/* Page scripts load after the page is ready. On slow phones ("lite" mode) the 3D library is skipped
+   and the pages show a light drawing of the pillow instead. Add ?lite to any URL to test it. */
+document.addEventListener('DOMContentLoaded', function () {
+  var c = navigator.connection || {}, small = matchMedia('(max-width: 760px)').matches;
+  var lite = /[?&]lite\b/.test(location.search) || (small && (c.saveData || /(^|slow-)2g|3g/.test(c.effectiveType || ''))) || (navigator.deviceMemory && navigator.deviceMemory <= 2);
+  var list = <?= json_encode(array_merge(!empty($meta['three']) ? ['three'] : [], array_map('asset', $meta['scripts'] ?? [])), JSON_UNESCAPED_SLASHES) ?>;
+  list.forEach(function (src) {
+    if (src === 'three') { if (lite) return; src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'; }
+    var el = document.createElement('script'); el.src = src; el.async = false; document.body.appendChild(el);
+  });
+});
+</script>
 <?php if (!empty($meta['paypal_client_id'])): ?><script src="https://www.paypal.com/sdk/js?client-id=<?= e(rawurlencode($meta['paypal_client_id'])) ?>&currency=USD&intent=capture&components=buttons&disable-funding=paylater,venmo,card" defer></script><?php endif; ?>
 </body>
 </html>

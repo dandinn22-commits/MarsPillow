@@ -59,6 +59,13 @@ function page_meta(string $key): array
             'description' => 'Mars Pillow aims to meet WCAG 2.1 AA so everyone can shop our store. Read what we do for accessibility and how to tell us about a barrier you find. Contact us.',
             'path' => '/accessibility',
         ],
+        'quiz' => [
+            'title' => 'Pillow Finder: Which Neck Pillow Fits You? | Mars Pillow',
+            'description' => 'Answer three quick questions about how you sleep and find which edge of the Mars contour memory foam pillow fits you best. Takes 30 seconds. Find your fit now.',
+            'path' => '/find-your-fit',
+        ],
+        'lp'        => ['title' => 'The Pillow for Side and Back Sleepers | Mars Pillow', 'description' => 'A contoured memory foam pillow with two heights, a 60-night trial and free US shipping.', 'path' => '/lp/neck-pillow', 'noindex' => true],
+        'review'    => ['title' => 'Review Your Mars Pillow | Mars Pillow', 'description' => 'Tell us how your Mars Pillow is working for you.', 'path' => '/review', 'noindex' => true],
         'cart'      => ['title' => 'Your Cart | Mars Pillow', 'description' => 'Review the items in your cart.', 'path' => '/cart', 'noindex' => true],
         'checkout'  => ['title' => 'Checkout | Mars Pillow', 'description' => 'Secure checkout.', 'path' => '/checkout', 'noindex' => true],
         'success'   => ['title' => 'Order Confirmed | Mars Pillow', 'description' => 'Thank you for your order.', 'path' => '/order/success', 'noindex' => true],
@@ -107,7 +114,14 @@ function schema_product(): array
         ];
     }
     $prices = array_column(offers(), 'price');
-    return [
+    $stats = reviews_stats();
+    $extra = [];
+    if ($stats['count'] > 0) { // only real, approved reviews
+        $extra['aggregateRating'] = ['@type' => 'AggregateRating', 'ratingValue' => $stats['avg'], 'reviewCount' => $stats['count'], 'bestRating' => 5];
+        $extra['review'] = array_map(fn($r) => ['@type' => 'Review', 'author' => ['@type' => 'Person', 'name' => $r['name']],
+            'reviewRating' => ['@type' => 'Rating', 'ratingValue' => (int)$r['rating'], 'bestRating' => 5], 'name' => $r['title'], 'reviewBody' => $r['body']], reviews_approved(5));
+    }
+    return $extra + [
         '@context' => 'https://schema.org', '@type' => 'Product',
         'name' => 'Mars Pillow', 'brand' => ['@type' => 'Brand', 'name' => 'Mars Pillow'],
         'description' => 'A contoured memory foam pillow designed to support the neck and help keep the spine aligned for back and side sleepers.',
@@ -151,4 +165,22 @@ function faqs(): array
         ['cat' => 'Orders and shipping', 'q' => 'Which payment methods do you accept?', 'a' => 'You can pay with all major credit and debit cards through Stripe, or with PayPal. Your card details are entered on the payment provider\'s secure page, not on our site.'],
         ['cat' => 'Orders and shipping', 'q' => 'Do you ship outside the United States?', 'a' => 'Not yet. We currently ship to addresses in the United States only.'],
     ];
+}
+
+/** Pillow finder: turns 3 answers into a recommendation. Returns null until all are answered. */
+function quiz_result(array $a): ?array
+{
+    $pos = ['back', 'side', 'both']; $build = ['narrow', 'average', 'broad']; $who = ['me', 'two'];
+    if (!in_array($a['pos'], $pos, true) || !in_array($a['build'], $build, true) || !in_array($a['who'], $who, true)) return null;
+    $edge = match ($a['pos']) { 'back' => 'lower', 'side' => 'higher', default => $a['build'] === 'narrow' ? 'lower' : 'higher' };
+    $why = match ($a['pos']) {
+        'back' => 'On your back, the lower edge supports your neck without pushing your head forward.',
+        'side' => 'On your side, the higher edge fills the space between your shoulder and your head.',
+        default => 'You change positions, so start with the ' . ($a['build'] === 'narrow' ? 'lower' : 'higher') . ' edge and turn the pillow on nights you sleep differently.',
+    };
+    $note = $a['build'] === 'broad' && $a['pos'] !== 'back'
+        ? 'With broad shoulders, the higher edge is the one to try first. If it still feels low after a week, tell us. You have the full trial to decide.'
+        : ($a['build'] === 'narrow' && $a['pos'] === 'side' ? 'With narrower shoulders, some side sleepers find the lower edge enough. Try both during the first nights.' : '');
+    $offerSlug = $a['who'] === 'two' ? 'mars-twin-pack' : 'mars-sleep-pack';
+    return ['edge' => $edge, 'why' => $why, 'note' => $note, 'offer' => offer_by_slug($offerSlug), 'key' => "{$a['pos']}-{$a['build']}-{$a['who']}"];
 }

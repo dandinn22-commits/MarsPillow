@@ -130,7 +130,7 @@ $faqPreview = array_slice(faqs(), 0, 5);
     <div class="section-head">
       <span class="eyebrow scramble">Bundles</span>
       <h2 id="bundles-h">Pick your mission.</h2>
-      <p class="lede">Every bundle ships free within the US and comes with the <?= $nights ?>-night trial. The more you bundle, the more you save.</p>
+      <p class="lede">Every bundle ships free within the US and comes with the <?= $nights ?>-night trial. The more you bundle, the more you save. Not sure which edge you need? <a href="/find-your-fit">Take the 30-second pillow finder</a>.</p>
     </div>
     <?= render('partials/bundle-picker', ['selected' => offer_by_slug((string)cfg('default_offer')), 'context' => 'home']) ?>
   </div>
@@ -160,22 +160,7 @@ $faqPreview = array_slice(faqs(), 0, 5);
   </div>
 </section>
 
-<?php if (!is_live()): ?>
-<section class="band" aria-labelledby="rev-h" style="padding-top:0">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">Reviews</span>
-      <h2 id="rev-h">From real sleepers.</h2>
-      <p class="fine">Placeholder: this section is hidden in live mode until you add real, verified customer reviews.</p>
-    </div>
-    <div class="review-slots">
-      <div class="slot"><b>Reviews will appear here</b>Only verified customer reviews</div>
-      <div class="slot"><b>Reviews will appear here</b>Only verified customer reviews</div>
-      <div class="slot"><b>Reviews will appear here</b>Only verified customer reviews</div>
-    </div>
-  </div>
-</section>
-<?php endif; ?>
+<?= render('partials/reviews') ?>
 
 <?= render('partials/trust-strip') ?>
 

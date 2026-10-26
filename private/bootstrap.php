@@ -31,6 +31,9 @@ require __DIR__ . '/src/mailer.php';
 require __DIR__ . '/src/stripe.php';
 require __DIR__ . '/src/paypal.php';
 require __DIR__ . '/src/seo.php';
+require __DIR__ . '/src/reviews.php';
+require __DIR__ . '/src/subscribers.php';
+require __DIR__ . '/src/capi.php';
 
 set_exception_handler(function (Throwable $e) use ($live) {
     error_log('[uncaught] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
@@ -42,5 +45,7 @@ set_exception_handler(function (Throwable $e) use ($live) {
     }
 });
 
-mp_start_session();
-mp_send_security_headers();
+if (PHP_SAPI !== 'cli') {
+    mp_start_session();
+    mp_send_security_headers();
+}

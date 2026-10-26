@@ -41,6 +41,7 @@
         </ul>
         <dl class="totals">
           <div><dt>Subtotal</dt><dd><?= money($cart['subtotal']) ?></dd></div>
+          <?php if ($cart['coupon']): ?><div class="disc"><dt>Discount (<?= e($cart['coupon']['code']) ?>)</dt><dd>−<?= money($cart['discount']) ?></dd></div><?php endif; ?>
           <div><dt>Shipping</dt><dd>Free</dd></div>
           <div><dt>Sales tax</dt><dd>Shown before you pay</dd></div>
           <div class="grand"><dt>Total</dt><dd><?= money($cart['total']) ?></dd></div>

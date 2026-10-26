@@ -23,7 +23,25 @@ function cart_add(string $offerId, int $qty = 1): void
     cart_set($offerId, (cart_raw()[$offerId] ?? 0) + max(1, $qty));
 }
 
-function cart_clear(): void { unset($_SESSION['cart']); }
+function cart_clear(): void { unset($_SESSION['cart'], $_SESSION['coupon']); }
+
+/** Discount codes come from config. Returns the coupon array or null. */
+function coupon_find(string $code): ?array
+{
+    $code = strtoupper(trim($code));
+    $c = cfg('coupons', [])[$code] ?? null;
+    return $c ? $c + ['code' => $code] : null;
+}
+
+function cart_apply_coupon(string $code): bool
+{
+    $c = coupon_find($code);
+    if (!$c) return false;
+    $_SESSION['coupon'] = $c['code'];
+    return true;
+}
+
+function cart_remove_coupon(): void { unset($_SESSION['coupon']); }
 
 /** Validated cart with server prices */
 function cart_summary(): array
@@ -41,5 +59,11 @@ function cart_summary(): array
         ];
         $subtotal += $line; $count += $qty;
     }
-    return ['lines' => $lines, 'subtotal' => $subtotal, 'shipping' => 0, 'total' => $subtotal, 'count' => $count, 'currency' => 'USD'];
+    $coupon = !empty($_SESSION['coupon']) ? coupon_find((string)$_SESSION['coupon']) : null;
+    $discount = ($coupon && $subtotal > 0) ? round($subtotal * $coupon['percent'] / 100, 2) : 0;
+    return [
+        'lines' => $lines, 'subtotal' => $subtotal, 'shipping' => 0,
+        'discount' => $discount, 'coupon' => $coupon ? ['code' => $coupon['code'], 'label' => $coupon['label']] : null,
+        'total' => round($subtotal - $discount, 2), 'count' => $count, 'currency' => 'USD',
+    ];
 }

@@ -118,7 +118,16 @@
         .to(intro, { ring: 1, duration: 1.2, ease: 'power3.out' }, 1.35),
     };
   } else if (hero && D) {
+    // lite mode / no WebGL: a drawing of the pillow, placed in the gap between the two headline lines
     const fb = $('#heroFallback'); fb.hidden = false; fb.innerHTML = D.svgPillow(); if (pressHint) pressHint.hidden = true;
+    const place = () => {
+      const r = hero.getBoundingClientRect(), l1 = display.querySelector('.l1').getBoundingClientRect(), l2 = display.querySelector('.l2').getBoundingClientRect();
+      const gap = Math.max(60, l2.top - l1.bottom);
+      fb.style.width = `${Math.min(r.width * .62, gap * 2.6, 520)}px`;
+      fb.style.top = `${(l1.bottom + l2.top) / 2 - r.top}px`;
+    };
+    place(); window.addEventListener('resize', place);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
   }
 
   /* ================= INSIDE: exploded 3D layers ================= */

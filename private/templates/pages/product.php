@@ -41,12 +41,14 @@ $productFaqs = array_values(array_filter(faqs(), fn($f) => in_array($f['cat'], [
         <span class="eyebrow">For back and side sleepers</span>
         <h1>Mars Pillow: contour memory foam pillow</h1>
         <p class="lede">A contour memory foam pillow with two heights, a raised neck roll and a washable knit cover. It is designed to support your neck and help keep your spine aligned through the night.</p>
+        <?php $rs = reviews_stats(); if ($rs['count']): ?><a class="rating-line" href="#reviews"><?= stars($rs['avg']) ?> <b><?= e(number_format($rs['avg'], 1)) ?></b> · <?= (int)$rs['count'] ?> verified reviews</a><?php endif; ?>
         <ul class="pdp-points">
           <li><?= $nights ?>-night sleep trial</li>
           <li><?= $years ?>-year warranty on the pillow</li>
           <li>Free US shipping in <?= todo((string)cfg('site.shipping_days')) ?> business days</li>
         </ul>
         <?= render('partials/bundle-picker', ['selected' => $selected, 'context' => 'product']) ?>
+        <p class="fine">Not sure which edge is for you? <a href="/find-your-fit">Take the 30-second pillow finder</a>.</p>
       </div>
     </div>
 
@@ -103,6 +105,8 @@ $productFaqs = array_values(array_filter(faqs(), fn($f) => in_array($f['cat'], [
   </div>
 </section>
 
+<?= render('partials/compare-brand') ?>
+<?= render('partials/reviews', ['headingId' => 'pdp-rev']) ?>
 <?= render('partials/trust-strip') ?>
 
 <div class="sticky-atc" id="stickyAtc" aria-hidden="true">

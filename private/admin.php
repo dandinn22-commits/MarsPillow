@@ -59,13 +59,22 @@ if ($path === '/admin' && $method === 'GET') {
     $counts = [];
     foreach (q('SELECT status, COUNT(*) c FROM orders GROUP BY status')->fetchAll() as $r) $counts[$r['status']] = (int)$r['c'];
     $messages = q('SELECT * FROM contact_messages ORDER BY id DESC LIMIT 20')->fetchAll();
-    admin_page('admin/orders', ['orders' => $orders, 'status' => $status, 'counts' => $counts, 'messages' => $messages]);
+    $reviews = q("SELECT r.*, o.order_number FROM reviews r JOIN orders o ON o.id = r.order_id ORDER BY CASE WHEN r.status = 'pending' THEN 0 ELSE 1 END, r.id DESC LIMIT 50")->fetchAll();
+    $subs = q('SELECT COUNT(*) total, SUM(converted) converted, SUM(CASE WHEN cart_json IS NOT NULL AND converted = 0 THEN 1 ELSE 0 END) open_carts FROM subscribers WHERE unsubscribed = 0')->fetch();
+    admin_page('admin/orders', ['orders' => $orders, 'status' => $status, 'counts' => $counts, 'messages' => $messages, 'reviews' => $reviews, 'subs' => $subs]);
 }
 
 if (preg_match('#^/admin/order/(\d+)$#', $path, $m) && $method === 'GET') {
     $order = order_get((int)$m[1]);
     if (!$order) not_found();
     admin_page('admin/order', ['order' => $order]);
+}
+
+if (preg_match('#^/admin/review/(\d+)/(approve|hide)$#', $path, $m) && $method === 'POST') {
+    require_csrf();
+    q('UPDATE reviews SET status = ? WHERE id = ?', [$m[2] === 'approve' ? 'approved' : 'hidden', (int)$m[1]]);
+    flash($m[2] === 'approve' ? 'Review approved. It now shows on the site.' : 'Review hidden.');
+    redirect('/admin#reviews');
 }
 
 if (preg_match('#^/admin/order/(\d+)/ship$#', $path, $m) && $method === 'POST') {

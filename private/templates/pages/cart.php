@@ -36,10 +36,16 @@
           <h2 class="s-label">Order summary</h2>
           <dl class="totals">
             <div><dt>Subtotal</dt><dd><?= money($cart['subtotal']) ?></dd></div>
+            <?php if ($cart['coupon']): ?><div class="disc"><dt>Discount (<?= e($cart['coupon']['code']) ?>)</dt><dd>−<?= money($cart['discount']) ?></dd></div><?php endif; ?>
             <div><dt>Shipping</dt><dd>Free (US)</dd></div>
             <div><dt>Sales tax</dt><dd>Calculated at checkout</dd></div>
             <div class="grand"><dt>Total</dt><dd><?= money($cart['total']) ?></dd></div>
           </dl>
+          <?php if ($cart['coupon']): ?>
+            <form method="post" action="/cart" class="coupon-row"><?= csrf_field() ?><input type="hidden" name="action" value="uncoupon"><span class="fine"><?= e($cart['coupon']['label']) ?> applied.</span><button class="remove" type="submit">Remove code</button></form>
+          <?php else: ?>
+            <form method="post" action="/cart" class="coupon-row"><?= csrf_field() ?><input type="hidden" name="action" value="coupon"><label class="sr-only" for="code">Discount code</label><input id="code" name="code" placeholder="Discount code" autocomplete="off" maxlength="40"><button class="btn btn-ghost btn-sm" type="submit">Apply</button></form>
+          <?php endif; ?>
           <a class="btn btn-primary magnetic" href="/checkout">Go to secure checkout</a>
           <p class="fine">Includes the <?= $nights ?>-night trial and <?= (int)cfg('site.warranty_years') ?>-year warranty. Pay by card or PayPal.</p>
           <a class="fine" href="/product/mars-pillow">← Keep shopping</a>

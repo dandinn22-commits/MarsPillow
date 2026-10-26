@@ -1,7 +1,7 @@
 <?php /** @var ?array $order */
 $paid = $order && in_array($order['status'], ['paid', 'shipped'], true);
 $purchase = $paid ? [
-    'id' => $order['order_number'], 'value' => $order['total_cents'] / 100, 'currency' => 'USD',
+    'id' => $order['order_number'], 'value' => $order['total_cents'] / 100, 'currency' => 'USD', 'email' => (string)$order['customer_email'],
     'items' => array_map(fn($i) => ['id' => $i['offer_id'], 'name' => $i['name'], 'price' => $i['unit_price_cents'] / 100, 'qty' => (int)$i['qty']], $order['items']),
 ] : null;
 ?>

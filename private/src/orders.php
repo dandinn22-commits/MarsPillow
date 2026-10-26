@@ -21,9 +21,10 @@ function order_create_pending(array $cart, string $method): array
     $pdo->beginTransaction();
     try {
         $num = new_order_number();
-        q('INSERT INTO orders (order_number, status, payment_method, currency, subtotal_cents, shipping_cents, total_cents, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [
-            $num, 'pending', $method, 'USD', $cart['subtotal'] * 100, $cart['shipping'] * 100, $cart['total'] * 100, now_utc(),
+        q('INSERT INTO orders (order_number, status, payment_method, currency, subtotal_cents, shipping_cents, discount_cents, coupon_code, total_cents, marketing_consent, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+            $num, 'pending', $method, 'USD', (int)round($cart['subtotal'] * 100), (int)round($cart['shipping'] * 100),
+            (int)round(($cart['discount'] ?? 0) * 100), $cart['coupon']['code'] ?? null, (int)round($cart['total'] * 100), (($_COOKIE['mp_consent'] ?? '') === 'yes') ? 1 : 0, now_utc(),
         ]);
         $id = (int)$pdo->lastInsertId();
         foreach ($cart['lines'] as $l) {
@@ -65,7 +66,12 @@ function order_mark_paid(int $id, string $captureId, array $info): bool
         $info['city'] ?? null, $info['state'] ?? null, $info['postal'] ?? null, $info['country'] ?? null, $id,
     ]);
     if ($st->rowCount() !== 1) return false;
+    q('UPDATE orders SET review_token = ? WHERE id = ?', [bin2hex(random_bytes(20)), $id]);
     $order = order_get($id);
+    if (!empty($order['customer_email'])) {
+        try { q('UPDATE subscribers SET converted = 1 WHERE email = ?', [strtolower($order['customer_email'])]); } catch (Throwable $e) {}
+    }
+    try { meta_capi_purchase($order); } catch (Throwable $e) { error_log('[capi] ' . $e->getMessage()); }
     try {
         send_order_emails($order);
         q('UPDATE orders SET emails_sent = 1 WHERE id = ?', [$id]);

@@ -3,6 +3,7 @@
 <?php foreach ($order['items'] as $i): ?>
 <tr><td style="padding:10px 0;border-bottom:1px solid #E2DEF2"><?= e($i['name']) ?> × <?= (int)$i['qty'] ?></td><td align="right" style="padding:10px 0;border-bottom:1px solid #E2DEF2"><?= cents($i['line_total_cents']) ?></td></tr>
 <?php endforeach; ?>
+<?php if ((int)$order['discount_cents'] > 0): ?><tr><td style="padding:10px 0">Discount<?= $order['coupon_code'] ? ' (' . e($order['coupon_code']) . ')' : '' ?></td><td align="right">−<?= cents($order['discount_cents']) ?></td></tr><?php endif; ?>
 <tr><td style="padding:10px 0">Shipping</td><td align="right">Free</td></tr>
 <tr><td style="padding:10px 0;font-weight:bold">Total</td><td align="right" style="font-weight:bold"><?= cents($order['total_cents']) ?></td></tr>
 </table>

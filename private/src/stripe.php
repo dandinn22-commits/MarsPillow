@@ -56,6 +56,14 @@ function stripe_create_checkout(array $order): string
             ],
         ];
     }
+    if ((int)$order['discount_cents'] > 0) {
+        // a one-time Stripe coupon for exactly this order's discount
+        $coupon = stripe_request('POST', 'coupons', [
+            'amount_off' => (int)$order['discount_cents'], 'currency' => 'usd', 'duration' => 'once',
+            'name' => ($order['coupon_code'] ?: 'Discount'), 'max_redemptions' => 1,
+        ]);
+        $params['discounts'] = [['coupon' => $coupon['id']]];
+    }
     $session = stripe_request('POST', 'checkout/sessions', $params);
     order_set_ref((int)$order['id'], $session['id']);
     return $session['url'];

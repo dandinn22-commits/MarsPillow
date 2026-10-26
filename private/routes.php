@@ -11,6 +11,9 @@ function not_found(): never
     page('pages/404', page_meta('404'));
 }
 
+// A link with ?code=WELCOME10 adds the discount to the visitor's cart
+if ($method === 'GET' && !empty($_GET['code']) && is_string($_GET['code'])) cart_apply_coupon($_GET['code']);
+
 // ---------------- Pages ----------------
 $static = [
     '/'                 => ['pages/home', 'home'],
@@ -52,8 +55,11 @@ if ($path === '/cart') {
             'add'    => cart_add($id, (int)($_POST['qty'] ?? 1)),
             'update' => cart_set($id, (int)($_POST['qty'] ?? 0)),
             'remove' => cart_set($id, 0),
+            'coupon' => cart_apply_coupon((string)($_POST['code'] ?? '')) ? flash('Discount applied.') : flash('That code is not valid.', 'error'),
+            'uncoupon' => cart_remove_coupon(),
             default  => null,
         };
+        subscriber_sync_cart();
         redirect('/cart');
     }
     page('pages/cart', page_meta('cart'), ['cart' => cart_summary()]);
@@ -71,6 +77,7 @@ if ($path === '/api/cart') {
             'remove' => cart_set($id, 0),
             default  => json_out(['error' => 'Unknown action'], 422),
         };
+        subscriber_sync_cart();
     }
     json_out(cart_summary());
 }
@@ -191,10 +198,94 @@ if ($path === '/contact') {
     page('pages/contact', $meta, ['errors' => $errors, 'old' => $old]);
 }
 
+// ---------------- Discount codes ----------------
+if ($path === '/api/coupon' && $method === 'POST') {
+    require_csrf(true);
+    $in = json_decode(file_get_contents('php://input') ?: '[]', true) ?: [];
+    if (!empty($in['remove'])) { cart_remove_coupon(); json_out(cart_summary()); }
+    if (!rate_limit('coupon', 20, 600)) json_out(['error' => 'Too many tries. Please wait a few minutes.'], 429);
+    if (!cart_apply_coupon((string)($in['code'] ?? ''))) json_out(['error' => 'That code is not valid.'], 422);
+    json_out(cart_summary());
+}
+
+// ---------------- Email capture (popup + quiz) ----------------
+if ($path === '/api/subscribe' && $method === 'POST') {
+    require_csrf(true);
+    $in = json_decode(file_get_contents('php://input') ?: '[]', true) ?: [];
+    $email = clean_text($in['email'] ?? '', 190);
+    if (!empty($in['website'])) json_out(['ok' => true]); // honeypot
+    if (!valid_email($email)) json_out(['error' => 'Enter a valid email address, like name@example.com.'], 422);
+    if (!rate_limit('subscribe', 6, 3600)) json_out(['error' => 'Too many tries. Please try again later.'], 429);
+    $source = in_array($in['source'] ?? '', ['popup', 'quiz'], true) ? $in['source'] : 'popup';
+    $quiz = $source === 'quiz' ? clean_text($in['quiz'] ?? '', 60) : null;
+    $sub = subscriber_add($email, $source, $quiz);
+    $code = (string)cfg('popup_code');
+    if ($sub['is_new']) send_mail($email, 'Your Mars Pillow code: ' . $code, render('emails/welcome-code', ['code' => $code, 's' => $sub, 'quiz' => $quiz]));
+    json_out(['ok' => true, 'code' => $code, 'label' => coupon_find($code)['label'] ?? '']);
+}
+
+if (preg_match('#^/cart/restore/([a-f0-9]{40})$#', $path, $m) && $method === 'GET') {
+    $sub = subscriber_by_token($m[1]);
+    if ($sub && $sub['cart_json']) {
+        foreach ((json_decode((string)$sub['cart_json'], true) ?: []) as $id => $qty) cart_set((string)$id, (int)$qty);
+        $_SESSION['sub_email'] = $sub['email'];
+        if (cfg('popup_code')) cart_apply_coupon((string)cfg('popup_code'));
+    }
+    redirect('/cart');
+}
+
+if (preg_match('#^/unsubscribe/([a-f0-9]{40})$#', $path, $m)) {
+    $sub = subscriber_by_token($m[1]);
+    if ($sub && $method === 'POST') { require_csrf(); q('UPDATE subscribers SET unsubscribed = 1 WHERE id = ?', [$sub['id']]); flash('You have been unsubscribed. You will not get any more emails from us.'); redirect('/'); }
+    page('pages/unsubscribe', page_meta('review') + ['noindex' => true], ['sub' => $sub]);
+}
+
+// ---------------- Fit quiz ----------------
+if ($path === '/find-your-fit' && $method === 'GET') {
+    $answers = ['pos' => $_GET['pos'] ?? '', 'build' => $_GET['build'] ?? '', 'who' => $_GET['who'] ?? ''];
+    $result = quiz_result($answers);
+    $meta = page_meta('quiz');
+    $meta['schema'] = [schema_breadcrumbs([['Home', '/'], ['Pillow finder', '/find-your-fit']])];
+    $meta['scripts'] = ['assets/js/quiz.js'];
+    page('pages/quiz', $meta, ['a' => $answers, 'result' => $result]);
+}
+
+// ---------------- Ad landing page (fast, no 3D) ----------------
+if ($path === '/lp/neck-pillow' && $method === 'GET') {
+    $meta = page_meta('lp');
+    $meta['body_class'] = 'page-lp';
+    page('pages/lp', $meta, ['selected' => offer_by_slug((string)cfg('default_offer'))]);
+}
+
+// ---------------- Verified reviews ----------------
+if (preg_match('#^/review/([a-f0-9]{40})$#', $path, $m)) {
+    $order = review_order_by_token($m[1]);
+    if (!$order) not_found();
+    $errors = []; $old = []; $done = review_exists((int)$order['id']);
+    if ($method === 'POST' && !$done) {
+        require_csrf();
+        $old = ['name' => clean_text($_POST['name'] ?? '', 80), 'rating' => (int)($_POST['rating'] ?? 0), 'title' => clean_text($_POST['title'] ?? '', 120),
+                'body' => clean_text($_POST['body'] ?? '', 3000), 'sleep_position' => in_array($_POST['sleep_position'] ?? '', ['back', 'side', 'both'], true) ? $_POST['sleep_position'] : ''];
+        if ($old['name'] === '') $errors['name'] = 'Enter the name to show with your review, like "Jane D."';
+        if ($old['rating'] < 1 || $old['rating'] > 5) $errors['rating'] = 'Choose from 1 to 5 stars.';
+        if ($old['title'] === '') $errors['title'] = 'Add a short title.';
+        if (mb_strlen($old['body']) < 20) $errors['body'] = 'Write at least 20 characters about your experience.';
+        if (!$errors) { review_save((int)$order['id'], $old); $done = true; }
+    }
+    page('pages/review', page_meta('review'), ['order' => $order, 'errors' => $errors, 'old' => $old, 'done' => $done]);
+}
+
+// ---------------- Google Merchant Center product feed ----------------
+if ($path === '/feed.xml') {
+    header('Content-Type: application/xml; charset=utf-8');
+    echo render('feed');
+    exit;
+}
+
 // ---------------- SEO files ----------------
 if ($path === '/sitemap.xml') {
     header('Content-Type: application/xml; charset=utf-8');
-    $urls = ['/', '/product/mars-pillow', '/faq', '/about', '/contact', '/shipping-policy', '/returns', '/privacy-policy', '/terms-of-service', '/accessibility'];
+    $urls = ['/', '/product/mars-pillow', '/find-your-fit', '/faq', '/about', '/contact', '/shipping-policy', '/returns', '/privacy-policy', '/terms-of-service', '/accessibility'];
     echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
     foreach ($urls as $u) echo '  <url><loc>' . e(url($u)) . '</loc><changefreq>' . ($u === '/' || str_starts_with($u, '/product') ? 'weekly' : 'monthly') . '</changefreq><priority>' . ($u === '/' ? '1.0' : (str_starts_with($u, '/product') ? '0.9' : '0.5')) . "</priority></url>\n";
     echo '</urlset>';
