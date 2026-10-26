@@ -2,9 +2,10 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: a night-sky scroll — full-bleed bands, content on a 1160px axis, one pinned "exploded pillow" moment as the centerpiece */
+/* Layout: one continuous night sky (fixed star canvas behind everything), content on a 1160px axis,
+   two WebGL moments — a pressable 3D pillow in the hero and a pinned exploded view — plus a 60-night moon calendar */
 :root {
   --space: #0B132B;
   --midnight: #1C2541;
@@ -12,10 +13,11 @@
   --star: #F5F3FF;
   --mars: #E8743B;
   --mars-soft: #F2A07A;
-  --mist: rgba(245, 243, 255, .72);
-  --faint: rgba(245, 243, 255, .5);
+  --mist: rgba(245, 243, 255, .74);
+  --faint: rgba(245, 243, 255, .52);
   --line: rgba(245, 243, 255, .12);
   --glass: rgba(28, 37, 65, .55);
+  --veil: rgba(11, 19, 43, .72);
   --ok: #8FD3B5;
   --warn: #F08A8A;
   --font-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
@@ -27,14 +29,7 @@
 }
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body {
-  background: var(--space);
-  color: var(--star);
-  font-family: var(--font-body);
-  font-size: 17px;
-  line-height: 1.6;
-  overflow-x: hidden;
-}
+body { background: var(--space); color: var(--star); font-family: var(--font-body); font-size: 17px; line-height: 1.6; overflow-x: hidden; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--space); }
 img, svg, canvas { max-width: 100%; display: block; }
 a { color: inherit; }
@@ -43,13 +38,18 @@ button { font: inherit; color: inherit; }
 .skip { position: absolute; left: 16px; top: -60px; background: var(--mars); color: var(--space); padding: 10px 16px; border-radius: 10px; z-index: 100; font-weight: 600; text-decoration: none; }
 .skip:focus { top: 12px; }
 
+#sky { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
+main, footer { position: relative; z-index: 1; }
+.cursor-glow { position: fixed; left: 0; top: 0; width: 520px; height: 520px; margin: -260px 0 0 -260px; border-radius: 50%; background: radial-gradient(closest-side, rgba(91,75,138,.32), rgba(91,75,138,0)); pointer-events: none; z-index: 1; mix-blend-mode: screen; opacity: 0; transition: opacity .6s; }
+@media (pointer: fine) { .cursor-glow.on { opacity: 1; } }
+
 .band { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .wrap { max-width: var(--wrap); margin-inline: auto; }
 section.band { padding-block: clamp(72px, 10vw, 128px); position: relative; }
 
-h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.05; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
-h1 { font-size: clamp(3rem, 8.4vw, 6.6rem); }
-h2 { font-size: clamp(2.3rem, 5vw, 3.8rem); }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.04; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h1 { font-size: clamp(3.1rem, 8.6vw, 7rem); }
+h2 { font-size: clamp(2.3rem, 5vw, 3.9rem); }
 h3 { font-size: 1.7rem; }
 h1 em, h2 em { color: var(--mars-soft); }
 p { margin: 0; }
@@ -59,19 +59,23 @@ p { margin: 0; }
 .section-head { display: grid; gap: 18px; margin-bottom: 56px; max-width: 760px; }
 .todo { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .06em; border: 1px dashed rgba(242,160,122,.6); color: var(--mars-soft); padding: 1px 6px; border-radius: 6px; white-space: nowrap; vertical-align: middle; }
 
-/* buttons */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 15px 26px; border-radius: 999px; font-weight: 600; text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: box-shadow .3s, transform .3s, background .3s; font-size: 1rem; }
-.btn-primary { background: var(--mars); color: var(--space); box-shadow: 0 0 0 0 rgba(232,116,59,.0); }
-.btn-primary:hover { box-shadow: 0 0 36px 4px rgba(232,116,59,.45); transform: translateY(-1px); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 15px 26px; border-radius: 999px; font-weight: 600; text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: box-shadow .3s, background .3s, border-color .3s; font-size: 1rem; will-change: transform; }
+.btn-primary { background: var(--mars); color: var(--space); }
+.btn-primary:hover { box-shadow: 0 0 40px 6px rgba(232,116,59,.45); }
 .btn-ghost { border-color: var(--line); background: rgba(245,243,255,.04); }
 .btn-ghost:hover { border-color: rgba(245,243,255,.35); box-shadow: 0 0 28px rgba(91,75,138,.5); }
 
+/* logo: textured planet + "mars" (italic serif, orange) + "pillow." (heavy sans, white) */
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; line-height: 1; }
+.logo svg { width: 34px; height: 34px; flex: none; }
+.logo .lw { display: flex; align-items: baseline; gap: 5px; white-space: nowrap; }
+.logo .lw em { font-family: var(--font-display); font-style: italic; font-size: 1.85rem; color: var(--mars); letter-spacing: -.01em; }
+.logo .lw b { font-family: var(--font-body); font-weight: 800; font-size: 1.32rem; color: var(--star); letter-spacing: -.02em; }
+
 /* nav */
-.nav { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 50; transition: background .4s, backdrop-filter .4s, padding .4s, border-color .4s; border-bottom: 1px solid transparent; padding-block: 22px; }
+.nav { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 50; transition: background .4s, padding .4s, border-color .4s; border-bottom: 1px solid transparent; padding-block: 22px; }
 .nav.scrolled { background: var(--glass); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); border-color: var(--line); padding-block: 12px; }
 .nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-.logo { display: flex; align-items: center; gap: 11px; text-decoration: none; font-family: var(--font-display); font-size: 1.55rem; letter-spacing: .01em; }
-.logo svg { width: 30px; height: 30px; }
 .nav-links { display: flex; gap: 30px; list-style: none; margin: 0; padding: 0; font-size: .95rem; color: var(--mist); }
 .nav-links a { text-decoration: none; transition: color .2s; }
 .nav-links a:hover { color: var(--star); }
@@ -81,59 +85,75 @@ p { margin: 0; }
 .cart-count { position: absolute; top: -4px; right: -4px; min-width: 21px; height: 21px; padding: 0 5px; border-radius: 99px; background: var(--mars); color: var(--space); font-size: .72rem; font-weight: 700; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
 .cart-count[data-zero="true"] { background: var(--midnight); color: var(--faint); border: 1px solid var(--line); }
 .nav-cta { padding: 11px 20px; font-size: .92rem; }
-@media (max-width: 860px) { .nav-links { display: none; } }
+.progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 100%; background: linear-gradient(90deg, var(--nebula), var(--mars)); transform-origin: left; transform: scaleX(0); }
+@media (max-width: 960px) { .nav-links { display: none; } }
 @media (max-width: 420px) { .nav-cta { display: none; } }
 
 /* hero */
-.hero { position: relative; min-height: min(920px, 100svh); display: flex; align-items: center; overflow: hidden; padding-block: 140px 80px !important; }
-#sky { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
-.hero::after { content: ""; position: absolute; inset: auto 0 0; height: 180px; background: linear-gradient(to bottom, transparent, var(--space)); z-index: 1; pointer-events: none; }
-.hero .wrap { position: relative; z-index: 2; display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; width: 100%; }
+.hero { position: relative; min-height: min(940px, 100svh); display: flex; align-items: center; padding-block: 130px 70px !important; overflow: hidden; }
+#stage { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; touch-action: pan-y; }
+.hero .wrap { position: relative; z-index: 2; display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; width: 100%; pointer-events: none; }
+.hero .wrap a, .hero .wrap button { pointer-events: auto; }
 .hero-copy { display: grid; gap: 28px; min-width: 0; }
 .hero h1 .w { display: inline-block; will-change: transform, opacity; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
 .hero-meta { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: .9rem; color: var(--mist); }
 .hero-meta span { display: inline-flex; align-items: center; gap: 8px; }
 .hero-meta svg { width: 16px; height: 16px; color: var(--mars-soft); }
-.hero-art { position: relative; min-width: 0; }
-.hero-art .float { will-change: transform; filter: drop-shadow(0 40px 60px rgba(0,0,0,.45)); }
-.hero-shadow { width: 62%; height: 26px; margin: 10px auto 0; border-radius: 50%; background: radial-gradient(closest-side, rgba(91,75,138,.55), transparent); }
-.coord { position: absolute; font-family: var(--font-mono); font-size: .7rem; color: var(--faint); letter-spacing: .1em; }
+.hero-art { position: relative; min-width: 0; display: grid; gap: 14px; justify-items: center; }
+.art-box { width: 100%; aspect-ratio: 4 / 3; position: relative; }
+.art-box .fallback { position: absolute; inset: 8% 0 auto; }
+.press-hint { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 10px; font-family: var(--font-mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--star); transition: opacity .5s; text-shadow: 0 1px 8px rgba(11,19,43,.9); }
+.press-hint i { width: 46px; height: 46px; border-radius: 50%; border: 1.5px solid var(--star); position: relative; }
+.press-hint i::after { content: ""; position: absolute; inset: -1px; border-radius: 50%; border: 1.5px solid var(--mars); animation: ping 1.8s ease-out infinite; }
+@keyframes ping { from { transform: scale(1); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+.press-hint.gone { opacity: 0; }
+.sleep-switch { display: inline-flex; gap: 4px; padding: 4px; border-radius: 99px; border: 1px solid var(--line); background: var(--glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.sleep-switch button { border: 0; background: none; padding: 9px 16px; border-radius: 99px; cursor: pointer; font-size: .9rem; color: var(--mist); transition: background .3s, color .3s; }
+.sleep-switch button[aria-pressed="true"] { background: var(--star); color: var(--space); font-weight: 600; }
+.sleep-note { font-size: .88rem; color: var(--mist); text-align: center; min-height: 1.5em; }
 @media (max-width: 860px) {
-  .hero .wrap { grid-template-columns: 1fr; text-align: left; }
-  .hero-art { order: -1; max-width: 420px; margin-inline: auto; width: 100%; }
-  .hero { padding-block: 110px 56px !important; }
+  .hero .wrap { grid-template-columns: 1fr; }
+  .hero-art { order: -1; max-width: 460px; margin-inline: auto; width: 100%; }
+  .hero { padding-block: 100px 56px !important; }
 }
+
+/* marquee */
+.marquee { overflow: hidden; padding-block: 26px; border-block: 1px solid var(--line); background: var(--veil); position: relative; z-index: 1; }
+.marquee .track { display: flex; width: max-content; will-change: transform; }
+.marquee span { font-family: var(--font-display); font-size: clamp(2.6rem, 7vw, 5.4rem); line-height: 1; white-space: nowrap; padding-right: .6em; color: transparent; -webkit-text-stroke: 1px rgba(245,243,255,.45); }
+.marquee span em { color: var(--mars-soft); -webkit-text-stroke: 0; font-style: italic; }
 
 /* benefits */
 .benefits { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-.benefit { background: var(--space); padding: 34px 28px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.benefit { background: var(--veil); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 34px 28px; display: grid; gap: 14px; align-content: start; min-width: 0; transition: background .4s; }
+.benefit:hover { background: rgba(28,37,65,.85); }
 .benefit svg { width: 40px; height: 40px; color: var(--mars-soft); }
 .benefit h3 { font-size: 1.45rem; }
 .benefit p { color: var(--mist); font-size: .97rem; }
 @media (max-width: 960px) { .benefits { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 520px) { .benefits { grid-template-columns: 1fr; } }
 
-/* inside story */
-.inside { background: radial-gradient(120% 80% at 70% 40%, rgba(91,75,138,.35), transparent 60%), var(--space); }
-.inside-stage { display: grid; grid-template-columns: 1fr 1.25fr; gap: 48px; align-items: center; min-height: 82vh; }
-.layer-list { list-style: none; margin: 36px 0 0; padding: 0; display: grid; gap: 4px; counter-reset: layer; }
+/* inside */
+.inside { background: radial-gradient(120% 80% at 70% 40%, rgba(91,75,138,.35), transparent 60%); }
+.inside-stage { display: grid; grid-template-columns: 1fr 1.3fr; gap: 40px; align-items: center; min-height: 82vh; }
+.layer-list { list-style: none; margin: 36px 0 0; padding: 0; display: grid; gap: 4px; }
 .layer-list li { display: grid; grid-template-columns: 54px 1fr; gap: 4px 12px; padding: 16px 0; border-top: 1px solid var(--line); opacity: .38; transition: opacity .4s; }
 .layer-list li.on { opacity: 1; }
 .layer-list .num { font-family: var(--font-mono); font-size: .78rem; color: var(--mars-soft); padding-top: 5px; grid-row: span 2; }
 .layer-list b { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; line-height: 1.2; }
 .layer-list span.d { color: var(--mist); font-size: .95rem; }
-.exploded { position: relative; min-width: 0; }
-.exploded svg { width: 100%; height: auto; overflow: visible; }
+.exploded { position: relative; min-width: 0; aspect-ratio: 1 / .9; }
+.exploded canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.exploded svg.callouts { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.callouts text { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; fill: var(--star); }
+.exploded .fallback svg { width: 100%; height: auto; overflow: visible; }
 .tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; fill: var(--star); }
-@media (max-width: 860px) {
-  .inside-stage { grid-template-columns: 1fr; min-height: 0; gap: 24px; }
-  .exploded { order: -1; }
-}
+@media (max-width: 860px) { .inside-stage { grid-template-columns: 1fr; min-height: 0; gap: 24px; } .exploded { order: -1; } }
 
 /* spine */
 .spine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-.spine-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; background: linear-gradient(180deg, rgba(28,37,65,.7), rgba(11,19,43,.6)); display: grid; gap: 16px; min-width: 0; }
+.spine-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; background: linear-gradient(180deg, rgba(28,37,65,.8), rgba(11,19,43,.7)); display: grid; gap: 16px; min-width: 0; }
 .spine-card.good { border-color: rgba(232,116,59,.45); box-shadow: 0 0 60px -20px rgba(232,116,59,.45); }
 .spine-card header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .spine-card h3 { font-size: 1.6rem; }
@@ -144,14 +164,25 @@ p { margin: 0; }
 .spine-card svg { width: 100%; height: auto; }
 @media (max-width: 760px) { .spine-grid { grid-template-columns: 1fr; } }
 
+/* nights */
+.nights-layout { display: grid; grid-template-columns: 1fr 1.25fr; gap: 56px; align-items: center; }
+.night-count { font-family: var(--font-display); font-size: clamp(5rem, 14vw, 11rem); line-height: .9; font-variant-numeric: tabular-nums; color: var(--star); }
+.night-count small { font-family: var(--font-mono); font-size: .9rem; letter-spacing: .14em; color: var(--faint); display: block; margin-top: 10px; text-transform: uppercase; }
+.moons { display: grid; grid-template-columns: repeat(10, 1fr); gap: clamp(8px, 1.6vw, 16px); }
+.moon { aspect-ratio: 1; border-radius: 50%; background: var(--star); opacity: .14; transition: opacity .3s, box-shadow .3s; --off: 0px; box-shadow: inset var(--off) 0 0 0 var(--midnight); }
+.moon.lit { opacity: 1; }
+.moon.now { box-shadow: inset var(--off) 0 0 0 var(--midnight), 0 0 18px 3px rgba(232,116,59,.7); }
+@media (max-width: 860px) { .nights-layout { grid-template-columns: 1fr; gap: 28px; } }
+
 /* bundles */
+.bundles-bg { background: linear-gradient(180deg, transparent, rgba(28,37,65,.75) 30%, rgba(28,37,65,.75) 70%, transparent); }
 .bundles-layout { display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: start; }
 .bundle-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-.bundle { position: relative; text-align: left; padding: 24px; border-radius: var(--radius); border: 1px solid var(--line); background: rgba(28,37,65,.55); cursor: pointer; display: grid; gap: 10px; align-content: start; transition: border-color .3s, background .3s, transform .3s; min-width: 0; }
-.bundle:hover { border-color: rgba(245,243,255,.3); transform: translateY(-2px); }
-.bundle[aria-checked="true"] { border-color: var(--mars); background: rgba(232,116,59,.08); animation: glow 2.6s ease-in-out infinite; }
-@keyframes glow { 0%,100% { box-shadow: 0 0 0 1px var(--mars), 0 0 26px -6px rgba(232,116,59,.55); } 50% { box-shadow: 0 0 0 1px var(--mars), 0 0 44px -4px rgba(232,116,59,.75); } }
-.bundle .badge { position: absolute; top: -11px; right: 18px; background: var(--mars); color: var(--space); font-size: .72rem; font-weight: 700; padding: 4px 10px; border-radius: 99px; letter-spacing: .02em; }
+.bundle { position: relative; text-align: left; padding: 24px; border-radius: var(--radius); border: 1px solid var(--line); background: rgba(28,37,65,.7); cursor: pointer; display: grid; gap: 10px; align-content: start; transition: border-color .3s, background .3s; min-width: 0; transform-style: preserve-3d; will-change: transform; }
+.bundle:hover { border-color: rgba(245,243,255,.3); }
+.bundle[aria-checked="true"] { border-color: var(--mars); background: rgba(232,116,59,.09); animation: glow 2.6s ease-in-out infinite; }
+@keyframes glow { 0%,100% { box-shadow: 0 0 0 1px var(--mars), 0 0 26px -6px rgba(232,116,59,.55); } 50% { box-shadow: 0 0 0 1px var(--mars), 0 0 48px -4px rgba(232,116,59,.8); } }
+.bundle .badge { position: absolute; top: -11px; right: 18px; background: var(--mars); color: var(--space); font-size: .72rem; font-weight: 700; padding: 4px 10px; border-radius: 99px; }
 .bundle .badge.alt { background: var(--star); }
 .bundle .b-name { font-family: var(--font-display); font-size: 1.6rem; line-height: 1.1; }
 .bundle .b-inc { color: var(--mist); font-size: .92rem; }
@@ -162,14 +193,13 @@ p { margin: 0; }
 .bundle .units { display: flex; gap: 6px; margin-top: 4px; }
 .bundle .units i { display: block; height: 7px; border-radius: 4px; background: var(--mars-soft); }
 .bundle .units i.cv { background: var(--nebula); }
-.summary { position: sticky; top: 96px; border-radius: var(--radius); border: 1px solid var(--line); background: linear-gradient(160deg, rgba(91,75,138,.35), rgba(28,37,65,.8)); padding: 30px; display: grid; gap: 18px; min-width: 0; }
+.summary { position: sticky; top: 96px; border-radius: var(--radius); border: 1px solid var(--line); background: linear-gradient(160deg, rgba(91,75,138,.45), rgba(28,37,65,.9)); padding: 30px; display: grid; gap: 18px; min-width: 0; }
 .summary .s-label { font-family: var(--font-mono); font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
 .summary .s-name { font-family: var(--font-display); font-size: 2.1rem; line-height: 1.05; }
 .summary .s-price { display: flex; align-items: baseline; gap: 12px; font-variant-numeric: tabular-nums; flex-wrap: wrap; }
 .summary .s-price strong { font-size: 2.6rem; font-weight: 700; letter-spacing: -.02em; }
 .summary .s-price s { color: var(--faint); font-size: 1.1rem; }
 .save-chip { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; border-radius: 99px; background: rgba(143,211,181,.12); color: var(--ok); font-size: .88rem; font-weight: 600; width: fit-content; }
-.save-chip[hidden] { display: none !important; }
 .summary ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; color: var(--mist); font-size: .95rem; }
 .summary li { display: flex; gap: 10px; }
 .summary li::before { content: "✦"; color: var(--mars-soft); font-size: .8rem; padding-top: 3px; }
@@ -179,29 +209,27 @@ p { margin: 0; }
 @media (max-width: 520px) { .bundle-grid { grid-template-columns: 1fr; } }
 
 /* compare */
-.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--veil); }
 table { width: 100%; border-collapse: collapse; min-width: 560px; }
 th, td { padding: 18px 22px; text-align: left; border-bottom: 1px solid var(--line); }
-tr:last-child td { border-bottom: 0; }
+tr:last-child td, tr:last-child th { border-bottom: 0; }
 thead th { font-family: var(--font-mono); font-size: .76rem; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
 thead th.us { color: var(--mars-soft); }
-td.us { background: rgba(232,116,59,.06); }
+tbody th { font-weight: 500; }
+td.us { background: rgba(232,116,59,.07); }
 td .yes { color: var(--ok); font-weight: 600; }
 td .no { color: var(--faint); }
 
-/* reviews placeholder */
 .review-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.slot { border: 1px dashed rgba(245,243,255,.22); border-radius: var(--radius); padding: 28px; min-height: 180px; display: grid; place-content: center; text-align: center; gap: 8px; color: var(--faint); font-size: .95rem; }
+.slot { border: 1px dashed rgba(245,243,255,.22); border-radius: var(--radius); padding: 28px; min-height: 180px; display: grid; place-content: center; text-align: center; gap: 8px; color: var(--faint); font-size: .95rem; background: rgba(11,19,43,.5); }
 .slot b { font-family: var(--font-display); font-weight: 400; color: var(--mist); font-size: 1.35rem; }
 @media (max-width: 760px) { .review-slots { grid-template-columns: 1fr; } }
 
-/* trial strip */
-.strip { background: var(--midnight); border-block: 1px solid var(--line); padding-block: 30px !important; }
+.strip { background: rgba(28,37,65,.88); border-block: 1px solid var(--line); padding-block: 30px; position: relative; z-index: 1; }
 .strip .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px 36px; }
 .strip div.item { display: flex; align-items: center; gap: 12px; font-weight: 500; }
 .strip svg { width: 26px; height: 26px; color: var(--mars-soft); flex: none; }
 
-/* faq */
 .faq-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 48px; }
 .faq details { border-top: 1px solid var(--line); padding: 20px 0; }
 .faq details:last-child { border-bottom: 1px solid var(--line); }
@@ -212,21 +240,18 @@ td .no { color: var(--faint); }
 .faq details p { color: var(--mist); padding-top: 12px; max-width: 60ch; }
 @media (max-width: 860px) { .faq-grid { grid-template-columns: 1fr; gap: 24px; } }
 
-/* final cta */
 .final { text-align: center; overflow: hidden; }
 .final .wrap { display: grid; justify-items: center; gap: 26px; position: relative; z-index: 1; }
 .final .planet { position: absolute; width: 900px; height: 900px; left: 50%; top: 62%; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(circle at 50% 30%, rgba(232,116,59,.55), rgba(232,116,59,.12) 40%, transparent 66%); filter: blur(10px); z-index: 0; pointer-events: none; }
 
-/* footer */
-footer { border-top: 1px solid var(--line); padding-block: 48px 40px; color: var(--mist); font-size: .92rem; }
+footer { border-top: 1px solid var(--line); padding-block: 48px 40px; color: var(--mist); font-size: .92rem; background: var(--space); }
 footer .wrap { display: grid; gap: 28px; }
-.foot-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px; }
+.foot-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 24px; }
 .foot-links { display: flex; flex-wrap: wrap; gap: 10px 24px; list-style: none; margin: 0; padding: 0; }
 .foot-links a { text-decoration: none; }
 .foot-links a:hover { color: var(--star); }
 .disclaimer { font-size: .8rem; color: var(--faint); max-width: 80ch; }
 
-/* cart drawer */
 .scrim { position: fixed; inset: 0; background: rgba(5,8,20,.6); backdrop-filter: blur(3px); z-index: 70; opacity: 0; pointer-events: none; transition: opacity .3s; }
 .scrim.open { opacity: 1; pointer-events: auto; }
 .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%); z-index: 80; background: var(--midnight); border-left: 1px solid var(--line); transform: translateX(105%); transition: transform .45s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column; padding: calc(22px + env(safe-area-inset-top, 0px)) max(22px, env(safe-area-inset-right, 0px)) calc(22px + env(safe-area-inset-bottom, 0px)) 22px; }
@@ -248,9 +273,11 @@ footer .wrap { display: grid; gap: 28px; }
 .drawer-foot { border-top: 1px solid var(--line); padding-top: 18px; display: grid; gap: 12px; }
 .subtotal { display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 
+.flyer { position: fixed; left: 0; top: 0; width: 70px; z-index: 75; pointer-events: none; }
+.spark { position: fixed; left: 0; top: 0; width: 6px; height: 6px; border-radius: 50%; background: var(--mars-soft); z-index: 75; pointer-events: none; box-shadow: 0 0 8px var(--mars); }
+
 .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 200%); visibility: hidden; background: var(--star); color: var(--space); padding: 12px 20px; border-radius: 99px; font-weight: 600; z-index: 90; transition: transform .4s cubic-bezier(.2,.8,.2,1); font-size: .95rem; max-width: calc(100% - 32px); }
 .toast.show { transform: translate(-50%, 0); visibility: visible; }
-
 .preview-note { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .04em; padding: 7px 12px; border-radius: 10px; background: var(--nebula); color: var(--star); position: fixed; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 45; max-width: min(340px, calc(100% - 24px)); opacity: .92; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -259,61 +286,94 @@ footer .wrap { display: grid; gap: 28px; }
 }
 </style>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="planetShade" cx="36%" cy="30%" r="78%"><stop offset="0" stop-color="#D98A5C"/><stop offset=".45" stop-color="#A2492A"/><stop offset=".8" stop-color="#5A2A3E"/><stop offset="1" stop-color="#2A1838"/></radialGradient>
+    <filter id="planetTex" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".11" numOctaves="4" seed="7"/><feColorMatrix values="0 0 0 0 .32  0 0 0 0 .1  0 0 0 0 .08  0 0 0 -2.2 1.35"/></filter>
+    <clipPath id="planetClip"><circle cx="32" cy="32" r="29"/></clipPath>
+    <symbol id="planet" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="29" fill="url(#planetShade)"/>
+      <rect width="64" height="64" clip-path="url(#planetClip)" filter="url(#planetTex)" opacity=".75"/>
+      <circle cx="32" cy="32" r="29" fill="none" stroke="#F2A07A" stroke-opacity=".35" stroke-width="1"/>
+    </symbol>
+  </defs>
+</svg>
+
 <a class="skip" href="#main">Skip to content</a>
-<div class="preview-note">Design preview · photos, reviews and [TODO] details will be replaced with real ones</div>
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="cursor-glow" id="glow" aria-hidden="true"></div>
+<div class="preview-note">Design preview · photos and reviews will be replaced with real ones</div>
 
 <nav class="nav band" id="nav" aria-label="Main">
   <div class="wrap">
     <a class="logo" href="#top" aria-label="Mars Pillow home">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><defs><radialGradient id="lg" cx="35%" cy="35%"><stop offset="0" stop-color="#F2A07A"/><stop offset="1" stop-color="#B9481C"/></radialGradient></defs><circle cx="16" cy="16" r="10" fill="url(#lg)"/><path d="M3 19c6-3.4 20-6.6 26-6" stroke="#F5F3FF" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".85"/></svg>
-      Mars Pillow
+      <svg aria-hidden="true"><use href="#planet"/></svg>
+      <span class="lw"><em>mars</em><b>pillow.</b></span>
     </a>
     <ul class="nav-links">
       <li><a href="#inside">Inside</a></li>
       <li><a href="#spine">Alignment</a></li>
+      <li><a href="#nights">60 nights</a></li>
       <li><a href="#bundles">Bundles</a></li>
       <li><a href="#faq">FAQ</a></li>
     </ul>
     <div class="nav-actions">
-      <a class="btn btn-primary nav-cta" href="#bundles">Shop now</a>
+      <a class="btn btn-primary nav-cta magnetic" href="#bundles">Shop now</a>
       <button class="cart-btn" id="cartBtn" aria-label="Open cart, 0 items">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>
         <span class="cart-count" id="cartCount" data-zero="true">0</span>
       </button>
     </div>
   </div>
+  <div class="progress" id="progress"></div>
 </nav>
 
 <main id="main">
 <header class="hero band" id="top">
-  <canvas id="sky" aria-hidden="true"></canvas>
+  <canvas id="stage" aria-hidden="true"></canvas>
   <div class="wrap">
     <div class="hero-copy">
-      <span class="eyebrow">Orthopedic memory foam pillow</span>
+      <span class="eyebrow scramble">Orthopedic memory foam pillow</span>
       <h1 id="headline">Sleep out of this <em>world.</em></h1>
       <p class="lede">A contoured memory foam pillow designed to support your neck and help keep your spine aligned, whether you sleep on your back or your side.</p>
       <div class="hero-actions">
-        <a class="btn btn-primary" href="#bundles">Choose your bundle
+        <a class="btn btn-primary magnetic" href="#bundles">Choose your bundle
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
         <a class="btn btn-ghost" href="#inside">See what's inside</a>
       </div>
       <div class="hero-meta">
         <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg>Free US shipping</span>
-        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>100-night trial <span class="todo">TODO</span></span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>60-night trial</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z"/></svg>3-year warranty</span>
       </div>
     </div>
     <div class="hero-art">
-      <div class="float" id="heroPillow"></div>
-      <div class="hero-shadow" id="heroShadow"></div>
+      <div class="art-box" id="artBox">
+        <div class="fallback" id="heroFallback" hidden></div>
+        <div class="press-hint" id="pressHint" aria-hidden="true"><i></i>Press the pillow</div>
+      </div>
+      <div class="sleep-switch" role="group" aria-label="How do you sleep?">
+        <button type="button" aria-pressed="true" data-pose="back">Back sleeper</button>
+        <button type="button" aria-pressed="false" data-pose="side">Side sleeper</button>
+      </div>
+      <p class="sleep-note" id="sleepNote" aria-live="polite">Lower edge under your neck.</p>
     </div>
   </div>
 </header>
 
+<div class="marquee band" aria-hidden="true">
+  <div class="track" id="marquee">
+    <span>Support <em>·</em> Align <em>·</em> Recover <em>·</em> Repeat <em>·</em></span>
+    <span>Support <em>·</em> Align <em>·</em> Recover <em>·</em> Repeat <em>·</em></span>
+    <span>Support <em>·</em> Align <em>·</em> Recover <em>·</em> Repeat <em>·</em></span>
+  </div>
+</div>
+
 <section class="band" aria-labelledby="why-h">
   <div class="wrap">
     <div class="section-head">
-      <span class="eyebrow">Why it feels different</span>
+      <span class="eyebrow scramble">Why it feels different</span>
       <h2 id="why-h">Shaped around the curve of your neck.</h2>
     </div>
     <div class="benefits">
@@ -344,23 +404,27 @@ footer .wrap { display: grid; gap: 28px; }
 <section class="band inside" id="inside" aria-labelledby="inside-h">
   <div class="wrap inside-stage" id="insideStage">
     <div>
-      <span class="eyebrow">Inside the Mars Pillow</span>
+      <span class="eyebrow scramble">Inside the Mars Pillow</span>
       <h2 id="inside-h" style="margin-top:18px">Four layers, one job: <em>hold your neck.</em></h2>
       <ol class="layer-list" id="layerList">
-        <li data-i="0"><span class="num">L/01</span><b>Breathable cover</b><span class="d">Soft knit you can zip off and wash. <span class="todo">TODO fabric</span></span></li>
-        <li data-i="1"><span class="num">L/02</span><b>Cooling layer</b><span class="d">Helps move heat away from your face and neck. <span class="todo">TODO</span></span></li>
-        <li data-i="2"><span class="num">L/03</span><b>Memory foam core</b><span class="d">Slow-recovery foam that softens under your head and stays firm under your neck.</span></li>
-        <li data-i="3"><span class="num">L/04</span><b>Contour base</b><span class="d">The wave shape that gives the pillow its two heights. <span class="todo">TODO cm/in</span></span></li>
+        <li><span class="num">L/01</span><b>Breathable cover</b><span class="d">Soft knit you can zip off and wash. <span class="todo">TODO fabric</span></span></li>
+        <li><span class="num">L/02</span><b>Cooling layer</b><span class="d">Helps move heat away from your face and neck. <span class="todo">TODO</span></span></li>
+        <li><span class="num">L/03</span><b>Memory foam core</b><span class="d">Slow-recovery foam that softens under your head and stays firm under your neck.</span></li>
+        <li><span class="num">L/04</span><b>Contour base</b><span class="d">The wave shape that gives the pillow its two heights. <span class="todo">TODO size</span></span></li>
       </ol>
     </div>
-    <div class="exploded" id="exploded" aria-hidden="true"></div>
+    <div class="exploded" id="exploded" aria-hidden="true">
+      <canvas id="exCanvas"></canvas>
+      <svg class="callouts" id="callouts"></svg>
+      <div class="fallback" id="exFallback" hidden></div>
+    </div>
   </div>
 </section>
 
 <section class="band" id="spine" aria-labelledby="spine-h">
   <div class="wrap">
     <div class="section-head">
-      <span class="eyebrow">Spine alignment</span>
+      <span class="eyebrow scramble">Spine alignment</span>
       <h2 id="spine-h">A straighter line from head to shoulders.</h2>
       <p class="lede">A flat pillow can let your head tip and your neck bend. A contoured shape fills the gap under your neck so it rests closer to a neutral line. Many sleepers find that more comfortable.</p>
     </div>
@@ -379,10 +443,22 @@ footer .wrap { display: grid; gap: 28px; }
   </div>
 </section>
 
-<section class="band" id="bundles" aria-labelledby="bundles-h" style="background:linear-gradient(180deg, var(--space), var(--midnight) 60%, var(--space))">
+<section class="band" id="nights" aria-labelledby="nights-h">
+  <div class="wrap nights-layout">
+    <div class="section-head" style="margin:0">
+      <span class="eyebrow scramble">60-night trial</span>
+      <h2 id="nights-h">Two full moon cycles to <em>decide.</em></h2>
+      <p class="lede">Your neck needs a few nights to get used to a new shape. Sleep on it for 60 nights. If it isn't right for you, send it back.</p>
+      <div class="night-count" aria-hidden="true"><span id="nightNum">60</span><small>Night <span id="nightOf">60</span> of 60</small></div>
+    </div>
+    <div class="moons" id="moons" role="img" aria-label="Calendar of 60 nights shown as moon phases"></div>
+  </div>
+</section>
+
+<section class="band bundles-bg" id="bundles" aria-labelledby="bundles-h">
   <div class="wrap">
     <div class="section-head">
-      <span class="eyebrow">Bundles</span>
+      <span class="eyebrow scramble">Bundles</span>
       <h2 id="bundles-h">Pick your mission.</h2>
       <p class="lede">Every bundle ships free within the US. The more you bundle, the more you save.</p>
     </div>
@@ -394,7 +470,7 @@ footer .wrap { display: grid; gap: 28px; }
         <div class="s-price"><strong id="sPrice"></strong><s id="sCompare"></s></div>
         <span class="save-chip" id="sSave"></span>
         <ul id="sInc"></ul>
-        <button class="btn btn-primary" id="addBtn">Add to cart</button>
+        <button class="btn btn-primary magnetic" id="addBtn">Add to cart</button>
         <p class="fine">Secure checkout with card or PayPal. Prices in USD.</p>
       </aside>
     </div>
@@ -404,7 +480,7 @@ footer .wrap { display: grid; gap: 28px; }
 <section class="band" aria-labelledby="cmp-h">
   <div class="wrap">
     <div class="section-head">
-      <span class="eyebrow">Side by side</span>
+      <span class="eyebrow scramble">Side by side</span>
       <h2 id="cmp-h">Mars Pillow vs. a regular pillow.</h2>
     </div>
     <div class="table-wrap">
@@ -416,7 +492,8 @@ footer .wrap { display: grid; gap: 28px; }
           <tr><th scope="row">Fill</th><td class="us">Memory foam core</td><td>Fiber or feathers that flatten</td></tr>
           <tr><th scope="row">Cooling layer</th><td class="us"><span class="yes">Yes</span> <span class="todo">TODO</span></td><td><span class="no">Usually not</span></td></tr>
           <tr><th scope="row">Washable cover</th><td class="us"><span class="yes">Zip-off, machine washable</span></td><td>Varies</td></tr>
-          <tr><th scope="row">Risk-free trial</th><td class="us"><span class="yes">100 nights</span> <span class="todo">TODO</span></td><td><span class="no">Rarely</span></td></tr>
+          <tr><th scope="row">Trial</th><td class="us"><span class="yes">60 nights</span></td><td><span class="no">Rarely</span></td></tr>
+          <tr><th scope="row">Warranty</th><td class="us"><span class="yes">3 years</span></td><td><span class="no">Varies</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -426,7 +503,7 @@ footer .wrap { display: grid; gap: 28px; }
 <section class="band" aria-labelledby="rev-h" style="padding-top:0">
   <div class="wrap">
     <div class="section-head">
-      <span class="eyebrow">Reviews</span>
+      <span class="eyebrow scramble">Reviews</span>
       <h2 id="rev-h">From real sleepers.</h2>
     </div>
     <div class="review-slots">
@@ -439,8 +516,8 @@ footer .wrap { display: grid; gap: 28px; }
 
 <div class="band strip">
   <div class="wrap">
-    <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>100-night sleep trial <span class="todo">TODO</span></div>
-    <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z"/></svg>Warranty <span class="todo">TODO years</span></div>
+    <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>60-night sleep trial</div>
+    <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z"/></svg>3-year warranty on the pillow</div>
     <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/></svg>Free US shipping, <span class="todo">TODO days</span></div>
     <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Secure checkout</div>
   </div>
@@ -449,13 +526,14 @@ footer .wrap { display: grid; gap: 28px; }
 <section class="band faq" id="faq" aria-labelledby="faq-h">
   <div class="wrap faq-grid">
     <div class="section-head" style="margin:0">
-      <span class="eyebrow">FAQ</span>
+      <span class="eyebrow scramble">FAQ</span>
       <h2 id="faq-h">Questions, answered.</h2>
       <p class="lede">Can't find yours? Email us at <span class="todo">TODO email</span>.</p>
     </div>
     <div>
       <details><summary>Which side should I sleep on?</summary><p>Back sleepers usually prefer the lower edge under the neck. Side sleepers usually prefer the higher edge, which fills the space between the shoulder and the head. Try both during your first few nights.</p></details>
-      <details><summary>How long does the trial last?</summary><p>You can sleep on it for 100 nights <span class="todo">TODO</span>. If it isn't right for you, contact us for a return.</p></details>
+      <details><summary>How does the 60-night trial work?</summary><p>Sleep on your Mars Pillow for up to 60 nights. If it isn't right for you, contact us and we'll arrange a return. <span class="todo">TODO return terms</span></p></details>
+      <details><summary>What does the warranty cover?</summary><p>The pillow comes with a 3-year warranty. <span class="todo">TODO what's covered</span></p></details>
       <details><summary>How do I wash it?</summary><p>Unzip the cover and machine wash it cold, then air dry. Don't wash the foam core. Air it out instead. <span class="todo">TODO confirm care</span></p></details>
       <details><summary>Does it smell when I open it?</summary><p>New memory foam can have a light smell for a day or two. Let it air out in a ventilated room.</p></details>
       <details><summary>How fast does it ship?</summary><p>Orders ship free within the US and arrive in <span class="todo">TODO</span> business days.</p></details>
@@ -466,10 +544,10 @@ footer .wrap { display: grid; gap: 28px; }
 <section class="band final" aria-labelledby="final-h">
   <div class="planet" aria-hidden="true"></div>
   <div class="wrap">
-    <span class="eyebrow">Ready for liftoff</span>
+    <span class="eyebrow scramble">Ready for liftoff</span>
     <h2 id="final-h">Tonight could feel <em>different.</em></h2>
     <p class="lede">Start with one pillow, or bring one home for everyone in the bed.</p>
-    <a class="btn btn-primary" href="#bundles">Shop Mars Pillow</a>
+    <a class="btn btn-primary magnetic" href="#bundles">Shop Mars Pillow</a>
   </div>
 </section>
 </main>
@@ -477,7 +555,7 @@ footer .wrap { display: grid; gap: 28px; }
 <footer class="band">
   <div class="wrap">
     <div class="foot-top">
-      <a class="logo" href="#top">Mars Pillow</a>
+      <a class="logo" href="#top" aria-label="Mars Pillow home"><svg aria-hidden="true"><use href="#planet"/></svg><span class="lw"><em>mars</em><b>pillow.</b></span></a>
       <ul class="foot-links">
         <li><a href="#faq">FAQ</a></li>
         <li><a href="#top">Shipping Policy</a></li>
@@ -506,13 +584,17 @@ footer .wrap { display: grid; gap: 28px; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (() => {
   const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const FINE = window.matchMedia('(pointer: fine)').matches;
   const hasGsap = typeof gsap !== 'undefined';
-  if (hasGsap && typeof ScrollTrigger !== 'undefined') gsap.registerPlugin(ScrollTrigger);
+  const hasST = hasGsap && typeof ScrollTrigger !== 'undefined';
+  if (hasST) gsap.registerPlugin(ScrollTrigger);
+  const webgl = (() => { if (typeof THREE === 'undefined') return false; try { const c = document.createElement('canvas'); return !!(c.getContext('webgl') || c.getContext('experimental-webgl')); } catch (e) { return false; } })();
 
-  /* ---------- Offers (mirrors the server config later) ---------- */
+  /* ================= Offers (mirrors the server config later) ================= */
   const OFFERS = [
     { id: 'single', name: 'Mars Pillow', price: 99, compare: null, inc: ['1 Mars Pillow', 'Washable cover included'], units: ['p'] },
     { id: 'sleep-pack', name: 'Mars Sleep Pack', price: 129, compare: 138, inc: ['1 Mars Pillow', '1 extra Mars Cover'], units: ['p', 'c'] },
@@ -522,70 +604,353 @@ footer .wrap { display: grid; gap: 28px; }
   const fmt = n => '$' + n.toLocaleString('en-US');
   const savings = o => o.compare ? { usd: o.compare - o.price, pct: Math.round((o.compare - o.price) / o.compare * 100) } : null;
 
-  /* ---------- Pillow geometry ---------- */
-  const W = 420, B = 150, HMAX = 92, X0 = 20, X1 = 400, N = 70;
+  /* ================= Pillow profile (shared by SVG + 3D) ================= */
   const g = (x, m, s) => Math.exp(-((x - m) ** 2) / (2 * s * s));
-  const h = x => (0.5 + 0.5 * g(x, 0.2, 0.13) + 0.28 * g(x, 0.8, 0.15)) * Math.pow(Math.sin(Math.PI * x), 0.32);
+  const h = t => (0.5 + 0.5 * g(t, 0.2, 0.13) + 0.28 * g(t, 0.8, 0.15)) * Math.pow(Math.max(0, Math.sin(Math.PI * t)), 0.32);
+
+  const W = 420, B = 150, HMAX = 92, X0 = 20, X1 = 400, N2 = 70;
   const pt = (t, f) => [X0 + t * (X1 - X0), B - f * HMAX * h(t)];
   function slab(f1, f2) {
     let d = '';
-    for (let i = 0; i <= N; i++) { const [x, y] = pt(i / N, f2); d += (i ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); }
-    for (let i = N; i >= 0; i--) { const [x, y] = pt(i / N, f1); d += 'L' + x.toFixed(1) + ',' + y.toFixed(1); }
+    for (let i = 0; i <= N2; i++) { const [x, y] = pt(i / N2, f2); d += (i ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); }
+    for (let i = N2; i >= 0; i--) { const [x, y] = pt(i / N2, f1); d += 'L' + x.toFixed(1) + ',' + y.toFixed(1); }
     return d + 'Z';
   }
-  function topLine(f) {
-    let d = '';
-    for (let i = 2; i <= N - 2; i++) { const [x, y] = pt(i / N, f); d += (i > 2 ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); }
-    return d;
-  }
-  const DEFS = `
-    <defs>
+  const DEFS = `<defs>
       <linearGradient id="pgFront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5F3FF"/><stop offset=".55" stop-color="#D9D2F2"/><stop offset="1" stop-color="#8F84BF"/></linearGradient>
       <linearGradient id="pgBack" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B7AEE0"/><stop offset="1" stop-color="#5B4B8A"/></linearGradient>
       <linearGradient id="pgCool" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7FC8E8"/><stop offset="1" stop-color="#A9B8F5"/></linearGradient>
       <linearGradient id="pgFoam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EDE6FF"/><stop offset="1" stop-color="#B8ABE3"/></linearGradient>
       <linearGradient id="pgBase" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C6CB4"/><stop offset="1" stop-color="#3E3366"/></linearGradient>
-      <pattern id="pores" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#5B4B8A" opacity=".28"/><circle cx="6.5" cy="6" r=".7" fill="#5B4B8A" opacity=".22"/></pattern>
-      <pattern id="dots" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="3.5" cy="3.5" r="1.1" fill="#F5F3FF" opacity=".55"/></pattern>
-      <pattern id="knit" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><path d="M0 3h6" stroke="#5B4B8A" stroke-width=".6" opacity=".3"/></pattern>
-      <radialGradient id="rim" cx="20%" cy="0%" r="90%"><stop offset="0" stop-color="#E8743B" stop-opacity=".5"/><stop offset="1" stop-color="#E8743B" stop-opacity="0"/></radialGradient>
     </defs>`;
+  const mini = `<svg viewBox="0 0 ${W} 170" aria-hidden="true"><path d="${slab(0, 1)}" fill="#E4DDF8"/><path d="${slab(0, .12)}" fill="#8F84BF"/></svg>`;
 
-  // Hero pillow (solid, with depth)
-  const hero = document.getElementById('heroPillow');
-  hero.innerHTML = `<svg viewBox="0 0 ${W} 190" role="img" aria-label="Illustration of the contoured Mars Pillow">${DEFS}
-    <g transform="translate(16,-18)"><path d="${slab(0, 1)}" fill="url(#pgBack)"/></g>
-    <path d="${slab(0, 1)}" fill="url(#pgFront)"/>
-    <path d="${slab(0, 1)}" fill="url(#knit)"/>
-    <path d="${slab(0, 1)}" fill="url(#rim)"/>
-    <path d="${topLine(0.985)}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".8"/>
-    <path d="${topLine(0.08)}" fill="none" stroke="#5B4B8A" stroke-width="1.2" stroke-dasharray="3 5" opacity=".7"/>
-  </svg>`;
+  /* ================= Starfield (whole page) with warp on fast scroll ================= */
+  const sky = document.getElementById('sky'), sctx = sky.getContext('2d');
+  let stars = [], sw = 0, sh = 0, lastY = window.scrollY, vel = 0, shooting = null;
+  function skyResize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    sw = window.innerWidth; sh = window.innerHeight;
+    sky.width = sw * dpr; sky.height = sh * dpr; sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = Math.round(sw * sh / 2300);
+    stars = Array.from({ length: n }, () => ({ x: Math.random() * sw, y: Math.random() * sh, r: Math.random() * 1.3 + .2, z: Math.random(), p: Math.random() * 6.28 }));
+  }
+  function skyDraw(now) {
+    const t = now / 1000;
+    const y = window.scrollY, dy = y - lastY; lastY = y;
+    vel += (Math.max(-90, Math.min(90, dy)) - vel) * .18;
+    sctx.clearRect(0, 0, sw, sh);
+    const neb = sctx.createRadialGradient(sw * .2, sh * .25, 0, sw * .2, sh * .25, sw * .7);
+    neb.addColorStop(0, 'rgba(91,75,138,.22)'); neb.addColorStop(1, 'rgba(91,75,138,0)');
+    sctx.fillStyle = neb; sctx.fillRect(0, 0, sw, sh);
+    const streak = Math.abs(vel) < 6 ? 0 : Math.min(70, (Math.abs(vel) - 6) * 1.3);
+    sctx.strokeStyle = '#F5F3FF'; sctx.fillStyle = '#F5F3FF';
+    for (const s of stars) {
+      if (!REDUCED) {
+        s.y -= vel * (0.08 + s.z * .3);
+        s.x -= .03 + s.z * .05;
+        if (s.y < -20) s.y += sh + 40; if (s.y > sh + 20) s.y -= sh + 40; if (s.x < -2) s.x = sw + 2;
+      }
+      sctx.globalAlpha = REDUCED ? .7 : .4 + .6 * Math.sin(t * (0.6 + s.z) + s.p) ** 2;
+      const L = streak * (0.3 + s.z);
+      if (L > 3) { sctx.lineWidth = s.r * 1.1; sctx.beginPath(); sctx.moveTo(s.x, s.y); sctx.lineTo(s.x, s.y + Math.sign(vel) * L); sctx.stroke(); }
+      else { sctx.beginPath(); sctx.arc(s.x, s.y, s.r, 0, 6.29); sctx.fill(); }
+    }
+    sctx.globalAlpha = 1;
+    if (!REDUCED) {
+      if (!shooting && Math.random() < .004) shooting = { x: Math.random() * sw * .7 + sw * .25, y: Math.random() * sh * .35, life: 0 };
+      if (shooting) {
+        shooting.life += .016; const L = shooting.life, x = shooting.x - L * 560, yy = shooting.y + L * 240;
+        const gr = sctx.createLinearGradient(x, yy, x + 110, yy - 46); gr.addColorStop(0, 'rgba(245,243,255,.95)'); gr.addColorStop(1, 'rgba(245,243,255,0)');
+        sctx.strokeStyle = gr; sctx.lineWidth = 1.4; sctx.beginPath(); sctx.moveTo(x, yy); sctx.lineTo(x + 110, yy - 46); sctx.stroke();
+        if (L > .9) shooting = null;
+      }
+      requestAnimationFrame(skyDraw);
+    }
+  }
+  skyResize(); requestAnimationFrame(skyDraw);
 
-  // Exploded layers
+  /* ================= 3D helpers ================= */
+  // Indexed pillow mesh: curved top + bottom surface, tapered at all four edges so it closes like a real pillow
+  function pillowGeometry({ f1 = 0, f2 = 1, N = 96, M = 60, Wd = 4, D = 6.2, H = 1.25, inflate = 0 } = {}) {
+    const pos = [], uv = [], idx = [];
+    const surf = (f, top) => {
+      const base = pos.length / 3;
+      for (let j = 0; j <= M; j++) {
+        const v = j / M, tp = Math.pow(Math.max(0, Math.sin(Math.PI * v)), 0.22);
+        for (let i = 0; i <= N; i++) {
+          const t = i / N;
+          pos.push((t - .5) * Wd * (0.9 + 0.1 * tp) * (1 + inflate), f * H * h(t) * tp * (1 + inflate) - (f === 0 ? inflate * .05 : 0), (v - .5) * D * (1 + inflate * .5));
+          uv.push(t * 6, v * 9);
+        }
+      }
+      for (let j = 0; j < M; j++) for (let i = 0; i < N; i++) {
+        const a = base + j * (N + 1) + i, b = a + (N + 1), c = a + 1, d = b + 1;
+        if (top) idx.push(a, b, c, c, b, d); else idx.push(a, c, b, c, d, b);
+      }
+    };
+    surf(f2, true); surf(f1, false);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geo.setIndex(idx);
+    geo.computeVertexNormals();
+    geo.userData = { topCount: (N + 1) * (M + 1), orig: Float32Array.from(pos), H };
+    return geo;
+  }
+  function canvasTex(w, hgt, draw) { const c = document.createElement('canvas'); c.width = w; c.height = hgt; draw(c.getContext('2d'), w, hgt); return new THREE.CanvasTexture(c); }
+  const knitTex = () => {
+    const tx = canvasTex(128, 128, (c, w, hh) => {
+      c.fillStyle = '#808080'; c.fillRect(0, 0, w, hh);
+      c.strokeStyle = '#a0a0a0'; c.lineWidth = 3;
+      for (let i = -hh; i < w; i += 12) { c.beginPath(); c.moveTo(i, 0); c.lineTo(i + hh, hh); c.stroke(); }
+      c.strokeStyle = '#6a6a6a'; c.lineWidth = 2;
+      for (let i = -hh; i < w; i += 12) { c.beginPath(); c.moveTo(i + 6, 0); c.lineTo(i + 6 + hh, hh); c.stroke(); }
+    });
+    tx.wrapS = tx.wrapT = THREE.RepeatWrapping; return tx;
+  };
+  const glowTex = (rgb) => canvasTex(256, 256, (c, w) => {
+    const gr = c.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+    gr.addColorStop(0, `rgba(${rgb},.85)`); gr.addColorStop(.35, `rgba(${rgb},.28)`); gr.addColorStop(1, `rgba(${rgb},0)`);
+    c.fillStyle = gr; c.fillRect(0, 0, w, w);
+  });
+  const marsTex = () => canvasTex(1024, 512, (c, w, hh) => {
+    c.fillStyle = '#A9492A'; c.fillRect(0, 0, w, hh);
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    for (let k = 0; k < 1100; k++) {
+      const x = rnd(0, w), y = rnd(hh * .06, hh * .94), r = rnd(4, 80), dark = Math.random() < .5;
+      const gr = c.createRadialGradient(x, y, 0, x, y, r);
+      gr.addColorStop(0, dark ? 'rgba(70,26,40,.22)' : 'rgba(232,140,90,.16)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = gr; c.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    for (let k = 0; k < 60; k++) { const x = rnd(0, w), y = rnd(hh * .15, hh * .85), r = rnd(3, 16); c.strokeStyle = 'rgba(50,18,28,.35)'; c.lineWidth = 2; c.beginPath(); c.arc(x, y, r, 0, 6.29); c.stroke(); c.fillStyle = 'rgba(60,22,34,.25)'; c.fill(); }
+    c.fillStyle = 'rgba(60,20,30,.32)'; c.beginPath(); c.ellipse(w * .55, hh * .5, w * .22, hh * .045, .08, 0, 6.29); c.fill();
+    const cap = (y0, y1) => { const gr = c.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, 'rgba(245,235,230,.8)'); gr.addColorStop(1, 'rgba(245,235,230,0)'); c.fillStyle = gr; c.fillRect(0, Math.min(y0, y1), w, Math.abs(y1 - y0)); };
+    cap(0, hh * .08); cap(hh, hh * .93);
+  });
+  function stdLights(scene) {
+    scene.add(new THREE.HemisphereLight(0xB8AEF0, 0x0B132B, 0.45));
+    const key = new THREE.DirectionalLight(0xFFF4EE, 0.75); key.position.set(-5, 7, 4); scene.add(key);
+    const rim = new THREE.DirectionalLight(0xE8743B, 1.5); rim.position.set(6, 3, -6); scene.add(rim);
+    const fill = new THREE.DirectionalLight(0x6F5FB0, .45); fill.position.set(4, -2, 6); scene.add(fill);
+  }
+  const worldAt = (camera, nx, ny, zPlane) => {
+    const v = new THREE.Vector3(nx, ny, .5).unproject(camera);
+    const dir = v.sub(camera.position).normalize();
+    return camera.position.clone().add(dir.multiplyScalar((zPlane - camera.position.z) / dir.z));
+  };
+
+  /* ================= HERO: 3D pressable pillow + Mars ================= */
+  const hero = document.getElementById('top'), stageCv = document.getElementById('stage'), artBox = document.getElementById('artBox');
+  const pressHint = document.getElementById('pressHint');
+  let heroAPI = null;
+  if (webgl) {
+    const renderer = new THREE.WebGLRenderer({ canvas: stageCv, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(32, 1, .1, 200);
+    camera.position.set(0, 1.6, 14); camera.lookAt(0, 0, 0);
+    stdLights(scene);
+
+    const marsMap = marsTex(); marsMap.encoding = THREE.sRGBEncoding;
+    const mars = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), new THREE.MeshStandardMaterial({ map: marsMap, roughness: 1, metalness: 0 }));
+    mars.rotation.z = .35;
+    const atm = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex('232,116,59'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    const marsGroup = new THREE.Group(); marsGroup.add(atm, mars); scene.add(marsGroup);
+    const sun = new THREE.DirectionalLight(0xFFE2CC, .9); sun.position.set(-10, 4, 8); scene.add(sun);
+
+    const geo = pillowGeometry({ N: 110, M: 70 });
+    const pillow = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xD9D1F0, roughness: .9, metalness: 0, bumpMap: knitTex(), bumpScale: .012 }));
+    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: glowTex('8,6,30'), transparent: true, depthWrite: false, opacity: .9 }));
+    shadow.rotation.x = -Math.PI / 2; shadow.scale.set(7.5, 9, 1); shadow.position.y = -.25;
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex('91,75,138'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: .9 }));
+    halo.scale.set(11, 8, 1); halo.position.set(0, .8, -2);
+    const spin = new THREE.Group(); spin.add(pillow, shadow);
+    const holder = new THREE.Group(); holder.add(halo, spin); scene.add(holder);
+    const BASE_RY = -1.22;
+    spin.rotation.set(.14, BASE_RY, 0);
+
+    // memory-foam imprints: sink fast, recover slowly
+    const imprints = [];
+    let pressing = false, activeImp = null, hoverImp = null, dirty = false;
+    const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), pointerN = { x: 0, y: 0 };
+    function hitLocal(e) {
+      const r = stageCv.getBoundingClientRect();
+      ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(ndc, camera);
+      const hit = ray.intersectObject(pillow)[0];
+      return hit ? pillow.worldToLocal(hit.point.clone()) : null;
+    }
+    const isUI = e => e.target.closest('a,button');
+    hero.addEventListener('pointerdown', e => {
+      if (isUI(e)) return;
+      const p = hitLocal(e); if (!p) return;
+      pressing = true; activeImp = { x: p.x, z: p.z, s: 0, target: .55, hold: true }; imprints.push(activeImp);
+      pressHint.classList.add('gone');
+    });
+    hero.addEventListener('pointermove', e => {
+      pointerN.x = (e.clientX / window.innerWidth) * 2 - 1; pointerN.y = (e.clientY / window.innerHeight) * 2 - 1;
+      const p = hitLocal(e);
+      hero.style.cursor = p ? (pressing ? 'grabbing' : 'grab') : '';
+      if (pressing && activeImp && p) {
+        if (Math.hypot(p.x - activeImp.x, p.z - activeImp.z) > .28) { activeImp.hold = false; activeImp = { x: p.x, z: p.z, s: activeImp.s, target: .55, hold: true }; imprints.push(activeImp); }
+      } else if (FINE && p && !pressing) {
+        if (!hoverImp || Math.hypot(p.x - hoverImp.x, p.z - hoverImp.z) > .35) { if (hoverImp) hoverImp.hold = false; hoverImp = { x: p.x, z: p.z, s: 0, target: .12, hold: true }; imprints.push(hoverImp); }
+      } else if (hoverImp) { hoverImp.hold = false; hoverImp = null; }
+    });
+    const release = () => { pressing = false; if (activeImp) activeImp.hold = false; activeImp = null; };
+    window.addEventListener('pointerup', release); window.addEventListener('pointercancel', release);
+    hero.addEventListener('pointerleave', () => { if (hoverImp) { hoverImp.hold = false; hoverImp = null; } });
+
+    function updateImprints(dt) {
+      if (!imprints.length && !dirty) return;
+      for (let k = imprints.length - 1; k >= 0; k--) {
+        const im = imprints[k];
+        if (im.hold) im.s += (im.target - im.s) * Math.min(1, dt * 7);
+        else { im.s *= Math.exp(-dt / 1.4); if (im.s < .004) imprints.splice(k, 1); }
+      }
+      while (imprints.length > 40) imprints.shift();
+      const { orig, topCount, H } = geo.userData, P = geo.attributes.position.array, sig2 = 2 * .42 * .42;
+      for (let v = 0; v < topCount; v++) {
+        const o = v * 3, ox = orig[o], oy = orig[o + 1], oz = orig[o + 2];
+        let d = 0;
+        for (const im of imprints) { const dx = ox - im.x, dz = oz - im.z, q = dx * dx + dz * dz; if (q < 1.6) d += im.s * Math.exp(-q / sig2); }
+        P[o + 1] = oy - Math.min(d, oy * .78) * Math.min(1, (oy / H) * 20);
+      }
+      geo.attributes.position.needsUpdate = true; geo.computeVertexNormals();
+      dirty = imprints.length > 0;
+    }
+
+    function layout() {
+      const r = stageCv.getBoundingClientRect(), cw = r.width, ch = r.height;
+      renderer.setSize(cw, ch, false); camera.aspect = cw / ch; camera.updateProjectionMatrix(); camera.updateMatrixWorld(true);
+      const a = artBox.getBoundingClientRect();
+      const nx = ((a.left + a.width / 2 - r.left) / cw) * 2 - 1, ny = -((a.top + a.height * .52 - r.top) / ch) * 2 + 1;
+      holder.position.copy(worldAt(camera, nx, ny, 0));
+      const upp = (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z) / ch;
+      holder.scale.setScalar((a.width * .9 * upp) / 6.6);
+      const narrow = cw < 860;
+      marsGroup.position.copy(worldAt(camera, narrow ? .7 : .84, narrow ? .82 : .62, -14));
+      const mr = narrow ? 2.0 : 3.1;
+      mars.scale.setScalar(mr); atm.scale.set(mr * 3.6, mr * 3.6, 1);
+    }
+    layout();
+    let lt; window.addEventListener('resize', () => { clearTimeout(lt); lt = setTimeout(layout, 120); });
+
+    let heroVisible = true, scrollP = 0, poseRY = 0, tAcc = 0;
+    new IntersectionObserver(es => { heroVisible = es[0].isIntersecting; }).observe(hero);
+    const clock = new THREE.Clock();
+    function frame() {
+      const dt = Math.min(clock.getDelta(), .05); tAcc += dt;
+      if (heroVisible) {
+        updateImprints(dt);
+        if (!REDUCED) {
+          spin.position.y = Math.sin(tAcc * 1.1) * .18;
+          spin.rotation.x = .14 + pointerN.y * .06 + scrollP * .5;
+          spin.rotation.y += ((BASE_RY + poseRY + pointerN.x * .18 + scrollP * 1.2) - spin.rotation.y) * .06;
+          spin.rotation.z = Math.sin(tAcc * .7) * .025;
+          shadow.material.opacity = .9 - Math.sin(tAcc * 1.1) * .2;
+          mars.rotation.y += dt * .04;
+        } else spin.rotation.y = BASE_RY + poseRY;
+        renderer.render(scene, camera);
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+    heroAPI = { setPose: side => { poseRY = side ? Math.PI : 0; }, setScroll: p => { scrollP = p; } };
+  } else {
+    const fb = document.getElementById('heroFallback'); fb.hidden = false;
+    fb.innerHTML = `<svg viewBox="0 0 ${W} 190" role="img" aria-label="Illustration of the contoured Mars Pillow">${DEFS}<g transform="translate(16,-18)"><path d="${slab(0, 1)}" fill="url(#pgBack)"/></g><path d="${slab(0, 1)}" fill="url(#pgFront)"/></svg>`;
+    pressHint.hidden = true;
+  }
+
+  const sleepNote = document.getElementById('sleepNote');
+  document.querySelectorAll('.sleep-switch button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.sleep-switch button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    const side = b.dataset.pose === 'side';
+    sleepNote.textContent = side ? 'Higher edge fills the gap between shoulder and head.' : 'Lower edge under your neck.';
+    if (heroAPI) heroAPI.setPose(side);
+  }));
+
+  /* ================= INSIDE: exploded 3D layers ================= */
   const LAYERS = [
-    { name: 'COVER', f: [0, 1], fill: 'url(#pgFront)', overlay: 'url(#knit)', op: .22 },
-    { name: 'COOLING', f: [0.86, 1], fill: 'url(#pgCool)', overlay: 'url(#dots)' },
-    { name: 'FOAM CORE', f: [0.3, 0.86], fill: 'url(#pgFoam)', overlay: 'url(#pores)' },
-    { name: 'CONTOUR BASE', f: [0, 0.3], fill: 'url(#pgBase)' },
+    { name: 'COVER', f: [0, 1], color: 0xF5F3FF, wire: true },
+    { name: 'COOLING', f: [0.86, 1], color: 0x8CCBEA, emissive: 0x1d4f6a },
+    { name: 'FOAM CORE', f: [0.3, 0.86], color: 0xE6DEFF },
+    { name: 'CONTOUR BASE', f: [0, 0.3], color: 0x6E5FA8 },
   ];
-  const OFF = [-150, -60, 20, 100]; // exploded vertical offsets
-  const ex = document.getElementById('exploded');
-  ex.innerHTML = `<svg viewBox="0 -170 ${W} 400">${DEFS}
-    ${LAYERS.slice().reverse().map((L, ri) => {
-      const i = LAYERS.length - 1 - ri;
-      const isCover = i === 0;
-      const tagY = pt(0.2, L.f[1])[1] - 8;
-      return `<g class="ly" data-i="${i}">
-        <path d="${slab(L.f[0], L.f[1])}" fill="${L.fill}" ${isCover ? `fill-opacity="${L.op}" stroke="#F5F3FF" stroke-opacity=".75" stroke-width="1.4" stroke-dasharray="4 4"` : ''}/>
-        ${L.overlay && !isCover ? `<path d="${slab(L.f[0], L.f[1])}" fill="${L.overlay}"/>` : ''}
-        <g class="lbl" opacity="0"><line x1="${W - 6}" y1="${tagY + 4}" x2="${W + 26}" y2="${tagY + 4}" stroke="#E8743B"/><text class="tag" x="${W + 32}" y="${tagY + 8}">L/0${i + 1} ${L.name}</text></g>
-      </g>`;
-    }).join('')}
-  </svg>`;
-  ex.querySelector('svg').setAttribute('viewBox', `0 -170 ${W + 150} 400`);
+  const OFF3 = [3.1, 1.55, 0, -1.45];
+  const exState = { p: 0 };
+  const lis = [...document.querySelectorAll('#layerList li')];
+  const setOn = n => lis.forEach((li, i) => li.classList.toggle('on', i <= n));
+  const exEl = document.getElementById('exploded'), exCv = document.getElementById('exCanvas'), callouts = document.getElementById('callouts');
+  if (webgl) {
+    const renderer = new THREE.WebGLRenderer({ canvas: exCv, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(30, 1, .1, 100);
+    camera.position.set(0, 4.2, 15.5); camera.lookAt(0, .5, 0);
+    stdLights(scene);
+    const group = new THREE.Group(); scene.add(group);
+    group.rotation.set(.18, -.75, 0);
+    const meshes = LAYERS.map(L => {
+      const geo = pillowGeometry({ f1: L.f[0], f2: L.f[1], N: 80, M: L.wire ? 26 : 50, inflate: L.wire ? .045 : 0 });
+      const mat = L.wire
+        ? new THREE.MeshBasicMaterial({ color: L.color, wireframe: true, transparent: true, opacity: .32 })
+        : new THREE.MeshStandardMaterial({ color: L.color, roughness: .8, emissive: L.emissive || 0x000000, emissiveIntensity: .35 });
+      const m = new THREE.Mesh(geo, mat); group.add(m);
+      m.userData.anchor = new THREE.Vector3(1.95, 1.25 * h(.2) * L.f[1] * .7, 0);
+      return m;
+    });
+    const poreArr = new Float32Array(900 * 3);
+    for (let k = 0; k < poreArr.length; k += 3) { const t = Math.random(), v = Math.random(), tp = Math.pow(Math.sin(Math.PI * v), .22); poreArr[k] = (t - .5) * 4 * (0.9 + .1 * tp); poreArr[k + 1] = 1.25 * h(t) * tp * .86 + .012; poreArr[k + 2] = (v - .5) * 6.2; }
+    const poreGeo = new THREE.BufferGeometry(); poreGeo.setAttribute('position', new THREE.BufferAttribute(poreArr, 3));
+    meshes[2].add(new THREE.Points(poreGeo, new THREE.PointsMaterial({ color: 0x5B4B8A, size: .045, transparent: true, opacity: .7 })));
 
-  /* ---------- Spine diagrams ---------- */
+    let cw = 1, ch = 1, visible = false;
+    function size() { const r = exEl.getBoundingClientRect(); cw = r.width; ch = r.height; renderer.setSize(cw, ch, false); camera.aspect = cw / ch; camera.updateProjectionMatrix(); callouts.setAttribute('viewBox', `0 0 ${cw} ${ch}`); }
+    size(); window.addEventListener('resize', size);
+    new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(exEl);
+    callouts.innerHTML = LAYERS.map((L, i) => `<g opacity="0"><circle r="3.5" fill="#E8743B"/><line stroke="#E8743B" stroke-width="1"/><text text-anchor="end">L/0${i + 1} ${L.name}</text></g>`).join('');
+    const cGroups = [...callouts.children];
+    const tmp = new THREE.Vector3();
+    const ease = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+    let tAcc = 0, last = performance.now();
+    function frame(now) {
+      const dt = Math.min((now - last) / 1000, .05); last = now; tAcc += dt;
+      if (visible) {
+        const p = exState.p;
+        group.rotation.y = -.75 + p * .9 + (REDUCED ? 0 : Math.sin(tAcc * .4) * .05);
+        group.rotation.x = .18 + p * .16;
+        meshes.forEach((m, i) => {
+          const local = Math.min(1, Math.max(0, (p - i * .14) / .58));
+          m.position.y = OFF3[i] * ease(local);
+        });
+        group.updateMatrixWorld(true);
+        meshes.forEach((m, i) => {
+          const local = Math.min(1, Math.max(0, (p - i * .14) / .58));
+          tmp.copy(m.userData.anchor); m.localToWorld(tmp); tmp.project(camera);
+          const x = (tmp.x * .5 + .5) * cw, y = (-tmp.y * .5 + .5) * ch, lx = Math.min(cw - 4, x + Math.max(48, cw * .16));
+          const cg = cGroups[i];
+          cg.setAttribute('opacity', Math.max(0, Math.min(1, (local - .55) / .3)).toFixed(2));
+          cg.children[0].setAttribute('cx', x); cg.children[0].setAttribute('cy', y);
+          const ln = cg.children[1]; ln.setAttribute('x1', x); ln.setAttribute('y1', y); ln.setAttribute('x2', lx); ln.setAttribute('y2', y - 18);
+          cg.children[2].setAttribute('x', lx); cg.children[2].setAttribute('y', y - 24);
+        });
+        renderer.render(scene, camera);
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  } else {
+    const fb = document.getElementById('exFallback'); fb.hidden = false; exCv.hidden = true;
+    const OFF = [-150, -60, 20, 100], fills = ['url(#pgFront)', 'url(#pgCool)', 'url(#pgFoam)', 'url(#pgBase)'];
+    fb.innerHTML = `<svg viewBox="0 -170 ${W + 150} 400">${DEFS}${LAYERS.map((L, i) => `<g transform="translate(0 ${OFF[i]})"><path d="${slab(L.f[0], L.f[1])}" fill="${fills[i]}" ${i === 0 ? 'fill-opacity=".2" stroke="#F5F3FF" stroke-dasharray="4 4"' : ''}/><text class="tag" x="${W + 10}" y="${pt(.2, L.f[1])[1]}">L/0${i + 1} ${L.name}</text></g>`).reverse().join('')}</svg>`;
+  }
+
+  /* ================= Spine diagrams ================= */
   function spineSVG(el, good) {
     const pill = good
       ? `<path d="M30 168 C30 128 52 118 74 126 C96 134 104 142 120 142 C140 142 150 128 168 128 C182 128 190 150 190 168Z" fill="url(#pgFront)" opacity=".95"/>`
@@ -595,24 +960,29 @@ footer .wrap { display: grid; gap: 28px; }
       <line x1="0" y1="168" x2="360" y2="168" stroke="rgba(245,243,255,.18)"/>
       ${pill}
       <rect x="150" y="112" width="230" height="56" rx="26" fill="#2B3560"/>
-      <path class="neck" d="M92 ${headY + 10} Q130 ${good ? 112 : 102} 160 118 L160 150 Q120 ${good ? 146 : 150} 92 ${headY + 34}Z" fill="#2B3560"/>
-      <circle class="head" cx="74" cy="${headY}" r="34" fill="#3A4577"/>
-      <g class="vert"></g>
-      <line class="guide" x1="96" y1="128" x2="350" y2="128" stroke="${good ? '#8FD3B5' : '#F08A8A'}" stroke-dasharray="5 6" opacity=".7"/>`;
-    const vert = el.querySelector('.vert');
-    const pts = [];
-    for (let i = 0; i < 9; i++) {
-      const x = 104 + i * 28;
-      const bentY = 128 - Math.max(0, (4 - i)) * 6.5; // neck section rises on a flat pillow
-      pts.push({ x, bent: bentY, straight: 128 });
-    }
-    vert.innerHTML = pts.map(p => `<circle cx="${p.x}" cy="${good ? p.bent : p.bent}" r="5.5" fill="${good ? '#E8743B' : '#F08A8A'}"/>`).join('');
-    return { el, pts, circles: [...vert.querySelectorAll('circle')], head: el.querySelector('.head') };
+      <path d="M92 ${headY + 10} Q130 ${good ? 112 : 102} 160 118 L160 150 Q120 ${good ? 146 : 150} 92 ${headY + 34}Z" fill="#2B3560"/>
+      <circle cx="74" cy="${headY}" r="34" fill="#3A4577"/>
+      <g class="vert">${Array.from({ length: 9 }, (_, i) => `<circle cx="${104 + i * 28}" cy="${128 - Math.max(0, 4 - i) * 6.5}" r="5.5" fill="${good ? '#E8743B' : '#F08A8A'}"/>`).join('')}</g>
+      <line x1="96" y1="128" x2="350" y2="128" stroke="${good ? '#8FD3B5' : '#F08A8A'}" stroke-dasharray="5 6" opacity=".7"/>`;
+    return [...el.querySelectorAll('.vert circle')];
   }
   spineSVG(document.getElementById('spineBad'), false);
-  const goodSpine = spineSVG(document.getElementById('spineGood'), true);
+  const goodVerts = spineSVG(document.getElementById('spineGood'), true);
 
-  /* ---------- Bundles ---------- */
+  /* ================= 60 moons ================= */
+  const moonsEl = document.getElementById('moons');
+  moonsEl.innerHTML = Array.from({ length: 60 }, () => '<i class="moon"></i>').join('');
+  const moons = [...moonsEl.children];
+  function sizeMoons() { const s = moons[0].getBoundingClientRect().width; moons.forEach((m, i) => { const ph = ((i + 1) % 30) / 30; m.style.setProperty('--off', `${(s * (1 - 2 * ph)).toFixed(1)}px`); }); }
+  sizeMoons(); window.addEventListener('resize', sizeMoons);
+  const nightNum = document.getElementById('nightNum'), nightOf = document.getElementById('nightOf');
+  function setNights(n) {
+    moons.forEach((m, i) => { m.classList.toggle('lit', i < n); m.classList.toggle('now', i === n - 1 && n < 60); });
+    nightNum.textContent = String(n).padStart(2, '0'); nightOf.textContent = n;
+  }
+  setNights(60);
+
+  /* ================= Bundles ================= */
   let selected = OFFERS[2];
   const grid = document.getElementById('bundleGrid');
   grid.innerHTML = OFFERS.map(o => {
@@ -625,9 +995,8 @@ footer .wrap { display: grid; gap: 28px; }
       <span class="units" aria-hidden="true">${o.units.map(u => `<i class="${u === 'c' ? 'cv' : ''}" style="width:${u === 'p' ? 34 : 18}px"></i>`).join('')}</span>
     </button>`;
   }).join('');
-  const sName = document.getElementById('sName'), sPrice = document.getElementById('sPrice'),
-        sCompare = document.getElementById('sCompare'), sSave = document.getElementById('sSave'),
-        sInc = document.getElementById('sInc'), addBtn = document.getElementById('addBtn');
+  const sName = document.getElementById('sName'), sPrice = document.getElementById('sPrice'), sCompare = document.getElementById('sCompare'),
+        sSave = document.getElementById('sSave'), sInc = document.getElementById('sInc'), addBtn = document.getElementById('addBtn');
   let shownPrice = selected.price;
   function select(o, animate) {
     selected = o;
@@ -635,9 +1004,8 @@ footer .wrap { display: grid; gap: 28px; }
     sName.textContent = o.name;
     sCompare.textContent = o.compare ? fmt(o.compare) : '';
     const s = savings(o);
-    sSave.hidden = !s;
-    if (s) sSave.textContent = `You save ${fmt(s.usd)} (${s.pct}%)`;
-    sInc.innerHTML = o.inc.map(i => `<li>${i}</li>`).join('') + '<li>Free US shipping</li>';
+    sSave.hidden = !s; if (s) sSave.textContent = `You save ${fmt(s.usd)} (${s.pct}%)`;
+    sInc.innerHTML = o.inc.map(i => `<li>${i}</li>`).join('') + '<li>60-night trial, 3-year warranty</li><li>Free US shipping</li>';
     addBtn.textContent = `Add to cart · ${fmt(o.price)}`;
     if (animate && hasGsap && !REDUCED) {
       const obj = { v: shownPrice };
@@ -646,10 +1014,7 @@ footer .wrap { display: grid; gap: 28px; }
     } else sPrice.textContent = fmt(o.price);
     shownPrice = o.price;
   }
-  grid.addEventListener('click', e => {
-    const b = e.target.closest('.bundle'); if (!b) return;
-    select(OFFERS.find(o => o.id === b.dataset.id), true);
-  });
+  grid.addEventListener('click', e => { const b = e.target.closest('.bundle'); if (b) select(OFFERS.find(o => o.id === b.dataset.id), true); });
   grid.addEventListener('keydown', e => {
     if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].includes(e.key)) return;
     e.preventDefault();
@@ -658,60 +1023,70 @@ footer .wrap { display: grid; gap: 28px; }
     select(n, true); grid.querySelector(`[data-id="${n.id}"]`).focus();
   });
   select(selected, false);
+  if (FINE && hasGsap && !REDUCED) grid.querySelectorAll('.bundle').forEach(b => {
+    b.addEventListener('pointermove', e => { const r = b.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; gsap.to(b, { rotateY: x * 10, rotateX: -y * 10, transformPerspective: 700, duration: .4 }); });
+    b.addEventListener('pointerleave', () => gsap.to(b, { rotateY: 0, rotateX: 0, duration: .6, ease: 'elastic.out(1,.5)' }));
+  });
 
-  /* ---------- Cart ---------- */
+  /* ================= Cart ================= */
   let cart = {};
   try { cart = JSON.parse(localStorage.getItem('mp_cart') || '{}') || {}; } catch (e) { cart = {}; }
   const save = () => { try { localStorage.setItem('mp_cart', JSON.stringify(cart)); } catch (e) {} };
   const countEl = document.getElementById('cartCount'), cartBtn = document.getElementById('cartBtn');
   const drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim'), lines = document.getElementById('lines');
   const totalQty = () => Object.values(cart).reduce((a, b) => a + b, 0);
-  const mini = `<svg viewBox="0 0 ${W} 170">${DEFS}<path d="${slab(0, 1)}" fill="url(#pgFront)"/></svg>`;
+  function renderCount() { const q = totalQty(); countEl.textContent = q; countEl.dataset.zero = q === 0; cartBtn.setAttribute('aria-label', `Open cart, ${q} item${q === 1 ? '' : 's'}`); }
   function renderCart() {
-    const q = totalQty();
-    countEl.textContent = q; countEl.dataset.zero = q === 0;
-    cartBtn.setAttribute('aria-label', `Open cart, ${q} item${q === 1 ? '' : 's'}`);
-    const ids = Object.keys(cart).filter(id => cart[id] > 0);
-    if (!ids.length) {
-      lines.innerHTML = `<li class="empty"><b style="font-family:var(--font-display);font-size:1.6rem;font-weight:400">Your cart is empty</b>Pick a bundle to get started.</li>`;
-    } else {
-      lines.innerHTML = ids.map(id => {
-        const o = OFFERS.find(x => x.id === id);
+    renderCount();
+    const ids = Object.keys(cart).filter(id => cart[id] > 0 && OFFERS.some(o => o.id === id));
+    lines.innerHTML = !ids.length
+      ? `<li class="empty"><b style="font-family:var(--font-display);font-size:1.6rem;font-weight:400">Your cart is empty</b>Pick a bundle to get started.</li>`
+      : ids.map(id => { const o = OFFERS.find(x => x.id === id);
         return `<li class="line" data-id="${id}"><div class="thumb">${mini}</div>
           <div><div class="ln">${o.name}</div><div class="lp">${fmt(o.price)} each</div>
-            <div class="qty"><button aria-label="Decrease quantity" data-a="dec">−</button><span>${cart[id]}</span><button aria-label="Increase quantity" data-a="inc">+</button></div></div>
-          <div style="display:grid;justify-items:end;gap:6px"><strong style="font-variant-numeric:tabular-nums">${fmt(o.price * cart[id])}</strong><button class="remove" data-a="rm">Remove</button></div></li>`;
-      }).join('');
-    }
-    const sub = ids.reduce((a, id) => a + OFFERS.find(x => x.id === id).price * cart[id], 0);
-    document.getElementById('subtotal').textContent = fmt(sub);
+          <div class="qty"><button aria-label="Decrease quantity" data-a="dec">−</button><span>${cart[id]}</span><button aria-label="Increase quantity" data-a="inc">+</button></div></div>
+          <div style="display:grid;justify-items:end;gap:6px"><strong style="font-variant-numeric:tabular-nums">${fmt(o.price * cart[id])}</strong><button class="remove" data-a="rm">Remove</button></div></li>`; }).join('');
+    document.getElementById('subtotal').textContent = fmt(ids.reduce((a, id) => a + OFFERS.find(x => x.id === id).price * cart[id], 0));
   }
   function openCart(open) {
-    drawer.classList.toggle('open', open); scrim.classList.toggle('open', open);
-    drawer.setAttribute('aria-hidden', !open);
-    if (open) document.getElementById('closeCart').focus(); else cartBtn.focus();
+    drawer.classList.toggle('open', open); scrim.classList.toggle('open', open); drawer.setAttribute('aria-hidden', !open);
+    (open ? document.getElementById('closeCart') : cartBtn).focus();
   }
   const toast = document.getElementById('toast'); let tT;
   function showToast(msg) { toast.textContent = msg; toast.classList.add('show'); clearTimeout(tT); tT = setTimeout(() => toast.classList.remove('show'), 2200); }
-  addBtn.addEventListener('click', () => {
-    cart[selected.id] = (cart[selected.id] || 0) + 1; save(); renderCart();
-    showToast(`${selected.name} added to cart`);
-    if (hasGsap && !REDUCED) {
-      gsap.fromTo(cartBtn, { y: 0 }, { y: -10, duration: .18, yoyo: true, repeat: 3, ease: 'power1.out' });
-      gsap.fromTo(countEl, { scale: 1.6 }, { scale: 1, duration: .5, ease: 'back.out(3)' });
+  function burst(x, y) {
+    for (let i = 0; i < 14; i++) {
+      const s = document.createElement('i'); s.className = 'spark'; document.body.appendChild(s);
+      const a = (i / 14) * Math.PI * 2, d = 30 + Math.random() * 30;
+      gsap.fromTo(s, { x: x - 3, y: y - 3, scale: 1, opacity: 1 }, { x: x - 3 + Math.cos(a) * d, y: y - 3 + Math.sin(a) * d, scale: 0, opacity: 0, duration: .7, ease: 'power2.out', onComplete: () => s.remove() });
     }
+  }
+  addBtn.addEventListener('click', () => {
+    cart[selected.id] = (cart[selected.id] || 0) + 1; save();
+    showToast(`${selected.name} added to cart`);
+    if (!hasGsap || REDUCED) { renderCart(); return; }
+    const from = addBtn.getBoundingClientRect(), to = cartBtn.getBoundingClientRect();
+    const fly = document.createElement('div'); fly.className = 'flyer'; fly.innerHTML = mini; document.body.appendChild(fly);
+    const sx = from.left + from.width / 2 - 35, sy = from.top - 20, ex = to.left + to.width / 2 - 35, ey = to.top + to.height / 2 - 14;
+    gsap.set(fly, { x: sx, y: sy, scale: 1.4, rotate: 0 });
+    gsap.to(fly, { x: ex, duration: .85, ease: 'power1.inOut' });
+    gsap.to(fly, { y: Math.min(sy, ey) - 140, duration: .42, ease: 'power2.out', onComplete: () => gsap.to(fly, { y: ey, duration: .43, ease: 'power2.in' }) });
+    gsap.to(fly, { scale: .35, rotate: -25, duration: .85, ease: 'power1.in', onComplete: () => {
+      fly.remove(); renderCart();
+      burst(to.left + to.width / 2, to.top + to.height / 2);
+      gsap.fromTo(cartBtn, { y: 0 }, { y: -8, duration: .15, yoyo: true, repeat: 3, ease: 'power1.out' });
+      gsap.fromTo(countEl, { scale: 1.7 }, { scale: 1, duration: .5, ease: 'back.out(3)' });
+    } });
   });
   lines.addEventListener('click', e => {
     const btn = e.target.closest('button[data-a]'); if (!btn) return;
     const li = btn.closest('.line'), id = li.dataset.id, a = btn.dataset.a;
     if (a === 'inc') cart[id]++;
     if (a === 'dec') cart[id] = Math.max(0, cart[id] - 1);
-    const removing = a === 'rm' || cart[id] === 0;
-    if (removing) {
-      delete cart[id]; save();
+    if (a === 'rm' || cart[id] === 0) {
+      delete cart[id]; save(); renderCount();
       if (hasGsap && !REDUCED) gsap.to(li, { x: 60, opacity: 0, height: 0, paddingTop: 0, paddingBottom: 0, duration: .4, ease: 'power2.in', onComplete: renderCart });
       else renderCart();
-      countEl.textContent = totalQty(); countEl.dataset.zero = totalQty() === 0;
       return;
     }
     save(); renderCart();
@@ -723,128 +1098,89 @@ footer .wrap { display: grid; gap: 28px; }
   document.getElementById('checkoutBtn').addEventListener('click', () => showToast('Checkout comes in the full site (Stripe + PayPal)'));
   renderCart();
 
-  /* ---------- Nav ---------- */
-  const nav = document.getElementById('nav');
-  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 40);
+  /* ================= Nav + progress ================= */
+  const nav = document.getElementById('nav'), progress = document.getElementById('progress');
+  const onScroll = () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    progress.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
+  };
   window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  window.addEventListener('resize', skyResize);
 
-  /* ---------- Starfield + Mars ---------- */
-  const cv = document.getElementById('sky'), ctx = cv.getContext('2d');
-  let stars = [], cw = 0, ch = 0, dpr = 1, t0 = performance.now(), shooting = null;
-  function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    cw = cv.clientWidth; ch = cv.clientHeight;
-    cv.width = cw * dpr; cv.height = ch * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const n = Math.round(cw * ch / 2600);
-    stars = Array.from({ length: n }, () => ({ x: Math.random() * cw, y: Math.random() * ch, r: Math.random() * 1.3 + .2, s: Math.random() * .6 + .1, p: Math.random() * 6.28, z: Math.random() }));
-  }
-  function draw(now) {
-    const t = (now - t0) / 1000;
-    ctx.clearRect(0, 0, cw, ch);
-    const neb = ctx.createRadialGradient(cw * .25, ch * .3, 0, cw * .25, ch * .3, cw * .6);
-    neb.addColorStop(0, 'rgba(91,75,138,.32)'); neb.addColorStop(1, 'rgba(91,75,138,0)');
-    ctx.fillStyle = neb; ctx.fillRect(0, 0, cw, ch);
-    // Mars
-    const mx = cw * (cw < 860 ? .82 : .9), my = ch * (cw < 860 ? .2 : .26), mr = Math.min(cw, ch) * (cw < 860 ? .2 : .26);
-    const glow = ctx.createRadialGradient(mx, my, mr * .8, mx, my, mr * 2.1);
-    glow.addColorStop(0, 'rgba(232,116,59,.28)'); glow.addColorStop(1, 'rgba(232,116,59,0)');
-    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(mx, my, mr * 2.1, 0, 6.29); ctx.fill();
-    const body = ctx.createRadialGradient(mx - mr * .4, my - mr * .4, mr * .1, mx, my, mr);
-    body.addColorStop(0, 'rgba(242,160,122,.55)'); body.addColorStop(.6, 'rgba(185,72,28,.38)'); body.addColorStop(1, 'rgba(60,25,40,.3)');
-    ctx.fillStyle = body; ctx.beginPath(); ctx.arc(mx, my, mr, 0, 6.29); ctx.fill();
-    ctx.save(); ctx.beginPath(); ctx.arc(mx, my, mr, 0, 6.29); ctx.clip();
-    ctx.strokeStyle = 'rgba(90,30,20,.18)'; ctx.lineWidth = mr * .07;
-    for (let k = 0; k < 4; k++) { const yy = my - mr * .5 + k * mr * .33; const off = Math.sin(t * .05 + k) * mr * .1; ctx.beginPath(); ctx.ellipse(mx + off, yy, mr * 1.1, mr * .06, 0, 0, 6.29); ctx.stroke(); }
-    ctx.restore();
-    // stars
-    for (const s of stars) {
-      if (!REDUCED) { s.x -= s.s * .06 * (0.4 + s.z); if (s.x < -2) s.x = cw + 2; }
-      const a = REDUCED ? .7 : .45 + .55 * Math.sin(t * (0.6 + s.z) + s.p) ** 2;
-      ctx.globalAlpha = a; ctx.fillStyle = '#F5F3FF';
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.29); ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-    if (!REDUCED) {
-      if (!shooting && Math.random() < .003) shooting = { x: Math.random() * cw * .7 + cw * .2, y: Math.random() * ch * .3, life: 0 };
-      if (shooting) {
-        shooting.life += .016; const L = shooting.life, x = shooting.x - L * 520, y = shooting.y + L * 220;
-        const gr = ctx.createLinearGradient(x, y, x + 90, y - 38); gr.addColorStop(0, 'rgba(245,243,255,.9)'); gr.addColorStop(1, 'rgba(245,243,255,0)');
-        ctx.strokeStyle = gr; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 90, y - 38); ctx.stroke();
-        if (L > .9) shooting = null;
-      }
-      requestAnimationFrame(draw);
-    }
-  }
-  resize(); requestAnimationFrame(draw);
-  let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(() => { resize(); if (REDUCED) requestAnimationFrame(draw); }, 150); });
-  // pause the sky when the hero is off-screen
-  let skyVisible = true;
-
-  /* ---------- Headline words ---------- */
+  /* ================= Headline words ================= */
   const hl = document.getElementById('headline');
-  function splitWords(node) {
-    [...node.childNodes].forEach(n => {
-      if (n.nodeType === 3) {
-        const frag = document.createDocumentFragment();
-        n.textContent.split(/(\s+)/).forEach(part => {
-          if (!part) return;
-          if (/^\s+$/.test(part)) frag.appendChild(document.createTextNode(part));
-          else { const s = document.createElement('span'); s.className = 'w'; s.textContent = part; frag.appendChild(s); }
-        });
-        n.replaceWith(frag);
-      } else if (n.nodeType === 1) { n.classList.add('w'); }
-    });
-  }
-  splitWords(hl);
   hl.setAttribute('aria-label', hl.textContent);
+  [...hl.childNodes].forEach(n => {
+    if (n.nodeType === 3) {
+      const frag = document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach(part => { if (!part) return; if (/^\s+$/.test(part)) frag.appendChild(document.createTextNode(part)); else { const s = document.createElement('span'); s.className = 'w'; s.setAttribute('aria-hidden', 'true'); s.textContent = part; frag.appendChild(s); } });
+      n.replaceWith(frag);
+    } else if (n.nodeType === 1) { n.classList.add('w'); n.setAttribute('aria-hidden', 'true'); }
+  });
 
-  if (!hasGsap || REDUCED) {
-    document.querySelectorAll('.layer-list li').forEach(li => li.classList.add('on'));
-    document.querySelectorAll('#exploded .ly').forEach((g, i) => { g.setAttribute('transform', `translate(0 ${OFF[g.dataset.i]})`); g.querySelector('.lbl').setAttribute('opacity', 1); });
-    goodSpine.circles.forEach(c => c.setAttribute('cy', 128));
-    goodSpine.head.setAttribute('cy', 100);
-    return;
+  if (!hasGsap || !hasST || REDUCED) { setOn(3); exState.p = 1; goodVerts.forEach(c => c.setAttribute('cy', 128)); return; }
+
+  /* ================= Motion ================= */
+  const GLYPHS = '01/<>*#+=:';
+  function scramble(el) {
+    const final = el.textContent; let f = 0; const total = 22;
+    el.setAttribute('aria-label', final);
+    const tick = () => {
+      f++;
+      el.textContent = final.split('').map((ch, i) => ch === ' ' ? ' ' : (i < (f / total) * final.length ? ch : GLYPHS[(Math.random() * GLYPHS.length) | 0])).join('');
+      if (f < total) requestAnimationFrame(tick); else el.textContent = final;
+    };
+    tick();
   }
+  document.querySelectorAll('.scramble').forEach(el => ScrollTrigger.create({ trigger: el, start: 'top 92%', once: true, onEnter: () => scramble(el) }));
 
-  /* ---------- Motion ---------- */
-  gsap.from('#headline .w', { y: 40, opacity: 0, rotate: 2, duration: .9, ease: 'power3.out', stagger: .09, delay: .15 });
-  gsap.from('.hero-copy > :not(h1)', { y: 18, opacity: 0, duration: .8, ease: 'power2.out', stagger: .1, delay: .55 });
-  gsap.from('#heroPillow', { y: 40, opacity: 0, duration: 1.2, ease: 'power3.out', delay: .3 });
-  gsap.to('#heroPillow', { y: -16, rotate: -1.2, duration: 3.4, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1.5 });
-  gsap.to('#heroShadow', { scaleX: .86, opacity: .6, duration: 3.4, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1.5 });
+  gsap.from('#headline .w', { y: 60, opacity: 0, rotate: 3, duration: 1, ease: 'power4.out', stagger: .09, delay: .15 });
+  gsap.from('.hero-copy > :not(h1)', { y: 18, opacity: 0, duration: .8, ease: 'power2.out', stagger: .1, delay: .6 });
+  gsap.from('#stage', { opacity: 0, duration: 1.6, ease: 'power2.out' });
+  if (heroAPI) ScrollTrigger.create({ trigger: '#top', start: 'top top', end: 'bottom top', scrub: true, onUpdate: s => heroAPI.setScroll(s.progress) });
 
-  // Generic reveal — elements start mostly visible, so the page reads fine before scroll
-  gsap.utils.toArray('.section-head, .benefit, .spine-card, .bundle, .summary, .table-wrap, .slot, .faq details, .final .wrap > *').forEach(el => {
-    gsap.from(el, { y: 26, opacity: .25, duration: .8, ease: 'power2.out', scrollTrigger: { trigger: el, start: 'top 90%', once: true } });
+  const track = document.getElementById('marquee');
+  let mx = 0, lastSY = window.scrollY, mv = 0;
+  gsap.ticker.add(() => {
+    const dy = window.scrollY - lastSY; lastSY = window.scrollY;
+    mv += (dy - mv) * .1;
+    mx -= .6 + Math.abs(mv) * .9;
+    const w = track.children[0].offsetWidth;
+    if (-mx > w) mx += w;
+    track.style.transform = `translate3d(${mx}px,0,0) skewX(${Math.max(-12, Math.min(12, -mv * .4))}deg)`;
   });
 
-  // Exploded pillow — pinned scroll story
-  const lis = [...document.querySelectorAll('#layerList li')];
-  const groups = [...document.querySelectorAll('#exploded .ly')].sort((a, b) => a.dataset.i - b.dataset.i);
-  const setOn = n => lis.forEach((li, i) => li.classList.toggle('on', i <= n));
-  setOn(-1); lis[0].classList.add('on');
+  gsap.utils.toArray('.section-head h2, .benefit, .spine-card, .bundle, .summary, .table-wrap, .slot, .faq details, .final .wrap > *').forEach(el => {
+    gsap.from(el, { y: 30, opacity: .25, duration: .9, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%', once: true } });
+  });
+
+  setOn(0);
   const mm = gsap.matchMedia();
-  mm.add({ wide: '(min-width: 861px)', narrow: '(max-width: 860px)' }, ctx2 => {
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: '#insideStage', start: ctx2.conditions.wide ? 'center center' : 'top 70px',
-        end: ctx2.conditions.wide ? '+=1400' : '+=900', scrub: .8, pin: ctx2.conditions.wide ? '#inside' : false,
-        onUpdate: self => setOn(Math.min(3, Math.floor(self.progress * 4.4) - 0)),
-      }
-    });
-    groups.forEach((g, i) => {
-      tl.to(g, { y: OFF[i], duration: 1, ease: 'power2.inOut' }, i * .35)
-        .to(g.querySelector('.lbl'), { opacity: 1, duration: .4 }, i * .35 + .6);
-    });
-    tl.to('#exploded svg', { rotate: -2, duration: 2.2, ease: 'none' }, 0);
-    return () => { gsap.set(groups, { clearProps: 'all' }); };
+  mm.add({ wide: '(min-width: 861px)', narrow: '(max-width: 860px)' }, c => {
+    gsap.fromTo(exState, { p: 0 }, { p: 1, ease: 'none', scrollTrigger: {
+      trigger: '#insideStage', start: c.conditions.wide ? 'center center' : 'top 80px',
+      end: c.conditions.wide ? '+=1500' : '+=700', scrub: .8, pin: c.conditions.wide ? '#inside' : false,
+      onUpdate: s => setOn(Math.min(3, Math.floor(s.progress * 4.2))),
+    } });
   });
 
-  // Spine straightening
-  const st = { trigger: '#spineGood', start: 'top 75%', once: true };
-  gsap.to(goodSpine.circles, { attr: { cy: 128 }, duration: 1.1, ease: 'elastic.out(1, .6)', stagger: .06, delay: .2, scrollTrigger: st });
-  gsap.from('#spineGood .neck, #spineGood .head', { y: -12, duration: 1, ease: 'power3.out', scrollTrigger: { ...st } });
+  gsap.to(goodVerts, { attr: { cy: 128 }, duration: 1.2, ease: 'elastic.out(1, .55)', stagger: .07, delay: .2, scrollTrigger: { trigger: '#spineGood', start: 'top 75%', once: true } });
 
-  // Pause starfield cost isn't needed in reduced mode; in motion mode, RAF is throttled by the browser when hidden
+  const nightsState = { n: 0 };
+  ScrollTrigger.create({ trigger: '#nights', start: 'top 70%', end: 'bottom 60%', scrub: .5,
+    onUpdate: s => setNights(Math.round(s.progress * 60)) });
+  if (ScrollTrigger.isInViewport && !ScrollTrigger.isInViewport('#nights')) setNights(0);
+
+  if (FINE) document.querySelectorAll('.magnetic').forEach(b => {
+    b.addEventListener('pointermove', e => { const r = b.getBoundingClientRect(); gsap.to(b, { x: (e.clientX - r.left - r.width / 2) * .28, y: (e.clientY - r.top - r.height / 2) * .35, duration: .4, ease: 'power3.out' }); });
+    b.addEventListener('pointerleave', () => gsap.to(b, { x: 0, y: 0, duration: .7, ease: 'elastic.out(1,.4)' }));
+  });
+
+  const glow = document.getElementById('glow');
+  if (FINE) {
+    const qx = gsap.quickTo(glow, 'x', { duration: .6, ease: 'power3' }), qy = gsap.quickTo(glow, 'y', { duration: .6, ease: 'power3' });
+    window.addEventListener('pointermove', e => { glow.classList.add('on'); qx(e.clientX); qy(e.clientY); }, { passive: true });
+  }
 })();
 </script>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><defs>
+  <radialGradient id="dBody" cx="192" cy="180" r="290" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#B8643C"/><stop offset=".35" stop-color="#83402F"/><stop offset=".7" stop-color="#4E2541"/><stop offset="1" stop-color="#1D1436"/></radialGradient>
+  <radialGradient id="dShade" cx="366" cy="376" r="250" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#0B132B" stop-opacity=".55"/><stop offset=".6" stop-color="#0B132B" stop-opacity="0"/></radialGradient>
+  <radialGradient id="dAtm" cx="256" cy="256" r="270" gradientUnits="userSpaceOnUse">
+    <stop offset=".72" stop-color="#E8743B" stop-opacity=".0"/><stop offset=".745" stop-color="#E8743B" stop-opacity=".45"/><stop offset=".82" stop-color="#E8743B" stop-opacity=".12"/><stop offset="1" stop-color="#E8743B" stop-opacity="0"/></radialGradient>
+  <radialGradient id="dCrater"><stop offset="0" stop-color="#3A1626" stop-opacity=".55"/><stop offset=".7" stop-color="#3A1626" stop-opacity=".25"/><stop offset=".86" stop-color="#F2A07A" stop-opacity=".25"/><stop offset="1" stop-color="#F2A07A" stop-opacity="0"/></radialGradient>
+  <filter id="dTex" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.0160 0.0300" numOctaves="5" seed="11" result="n"/>
+    <feColorMatrix in="n" values="0 0 0 0 .24  0 0 0 0 .08  0 0 0 0 .1  0 0 0 -2.4 1.45"/>
+  </filter>
+  <filter id="dLight" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.0080 0.0200" numOctaves="4" seed="3" result="n"/>
+    <feColorMatrix in="n" values="0 0 0 0 .95  0 0 0 0 .62  0 0 0 0 .42  0 0 0 2.6 -1.55"/>
+  </filter>
+  <radialGradient id="dVig"><stop offset="0" stop-color="#1A0E26" stop-opacity=".45"/><stop offset="1" stop-color="#1A0E26" stop-opacity="0"/></radialGradient>
+  <clipPath id="dClip"><circle cx="256" cy="256" r="200"/></clipPath>
+  <filter id="dTextShadow" x="-20%" y="-40%" width="140%" height="180%"><feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#12081c" flood-opacity=".75"/></filter></defs>
+  <circle cx="256" cy="256" r="270" fill="url(#dAtm)"/>
+  <circle cx="256" cy="256" r="200" fill="url(#dBody)"/>
+  <g clip-path="url(#dClip)">
+    <rect x="56" y="56" width="400" height="400" filter="url(#dLight)" opacity=".55"/>
+    <rect x="56" y="56" width="400" height="400" filter="url(#dTex)" opacity=".8"/>
+    <path d="M56 266 C 176 220, 296 280, 456 240" stroke="#F5E6DD" stroke-opacity=".14" stroke-width="12" fill="none"/>
+    <circle cx="413.2" cy="256.2" r="21.9" fill="url(#dCrater)"/><circle cx="203.2" cy="198.5" r="17.6" fill="url(#dCrater)"/><circle cx="346.8" cy="249.1" r="12.2" fill="url(#dCrater)"/><circle cx="227.2" cy="225.9" r="22.5" fill="url(#dCrater)"/><circle cx="110.1" cy="303.1" r="10.0" fill="url(#dCrater)"/><circle cx="295.4" cy="294.7" r="10.6" fill="url(#dCrater)"/><circle cx="364.4" cy="292.5" r="20.3" fill="url(#dCrater)"/><circle cx="159.5" cy="307.3" r="16.6" fill="url(#dCrater)"/><circle cx="261.6" cy="210.3" r="22.9" fill="url(#dCrater)"/>
+    <ellipse cx="256" cy="262" rx="124" ry="84" fill="url(#dVig)"/>
+    <circle cx="256" cy="256" r="200" fill="url(#dShade)"/>
+  </g>
+  <circle cx="256" cy="256" r="199" fill="none" stroke="#F2A07A" stroke-opacity=".28" stroke-width="1.6"/></svg>
