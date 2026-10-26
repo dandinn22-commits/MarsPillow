@@ -128,7 +128,7 @@ return [
 
     'tracking' => [
         // Loaded only after the visitor accepts cookies. Leave empty to turn off.
-        'ga4_id'        => '',  // e.g. G-XXXXXXXXXX
+        'ga4_id'           => 'G-R0J9GHL9SM',
         'meta_pixel_id' => '',  // e.g. 1234567890
         // Meta Conversions API: sends purchases from the server too, so Meta still counts them
         // when the browser blocks the pixel. Events Manager > your pixel > Settings > Generate access token.
