@@ -89,33 +89,36 @@ p { margin: 0; }
 @media (max-width: 960px) { .nav-links { display: none; } }
 @media (max-width: 420px) { .nav-cta { display: none; } }
 
-/* hero */
-.hero { position: relative; min-height: min(940px, 100svh); display: flex; align-items: center; padding-block: 130px 70px !important; overflow: hidden; }
-#stage { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; touch-action: pan-y; }
-.hero .wrap { position: relative; z-index: 2; display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; width: 100%; pointer-events: none; }
-.hero .wrap a, .hero .wrap button { pointer-events: auto; }
-.hero-copy { display: grid; gap: 28px; min-width: 0; }
+/* hero: centered stage — two giant offset lines, the 3D pillow floats between them, Mars horizon below */
+.hero { position: relative; min-height: max(760px, 100svh); display: grid; grid-template-rows: 1fr auto; text-align: center; padding-block: 104px 44px !important; overflow: hidden; }
+#stage { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+.hero-title { position: relative; z-index: 1; display: grid; justify-items: center; align-content: center; gap: clamp(14px, 2vw, 24px); }
+.hero h1 { font-size: clamp(3.4rem, 14.2vw, 13.2rem); line-height: .84; letter-spacing: -.035em; display: grid; justify-items: center; }
+.hero h1 .ln { display: block; white-space: nowrap; will-change: transform; }
+.hero h1 .l1 { transform: translateX(-7%); }
+.hero h1 .l2 { transform: translateX(7%); margin-top: clamp(64px, 11vw, 168px); }
 .hero h1 .w { display: inline-block; will-change: transform, opacity; }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
-.hero-meta { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: .9rem; color: var(--mist); }
+.hero-foot { position: relative; z-index: 3; display: grid; justify-items: center; gap: 20px; margin-top: 26px; }
+.hero-foot .lede { text-align: center; font-size: 1.08rem; max-width: 38em; }
+.hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+.hero .btn-ghost { background: rgba(11,19,43,.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.hero-meta { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; font-size: .9rem; color: var(--mist); }
 .hero-meta span { display: inline-flex; align-items: center; gap: 8px; }
 .hero-meta svg { width: 16px; height: 16px; color: var(--mars-soft); }
-.hero-art { position: relative; min-width: 0; display: grid; gap: 14px; justify-items: center; }
-.art-box { width: 100%; aspect-ratio: 4 / 3; position: relative; }
-.art-box .fallback { position: absolute; inset: 8% 0 auto; }
-.press-hint { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 10px; font-family: var(--font-mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--star); transition: opacity .5s; text-shadow: 0 1px 8px rgba(11,19,43,.9); }
-.press-hint i { width: 46px; height: 46px; border-radius: 50%; border: 1.5px solid var(--star); position: relative; }
-.press-hint i::after { content: ""; position: absolute; inset: -1px; border-radius: 50%; border: 1.5px solid var(--mars); animation: ping 1.8s ease-out infinite; }
-@keyframes ping { from { transform: scale(1); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+.hero-fallback { position: absolute; left: 50%; top: 40%; width: min(520px, 80vw); transform: translate(-50%, -50%); z-index: 2; }
+.press-hint { position: absolute; z-index: 3; left: 50%; top: 50%; transform: translate(-50%, 0); display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--star); transition: opacity .5s; pointer-events: none; padding: 7px 12px 7px 8px; border-radius: 99px; background: rgba(11,19,43,.55); border: 1px solid var(--line); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.press-hint i { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--star); position: relative; flex: none; }
+.press-hint i::after { content: ""; position: absolute; inset: -1.5px; border-radius: 50%; border: 1.5px solid var(--mars); animation: ping 1.8s ease-out infinite; }
+@keyframes ping { from { transform: scale(1); opacity: 1; } to { transform: scale(2.4); opacity: 0; } }
 .press-hint.gone { opacity: 0; }
-.sleep-switch { display: inline-flex; gap: 4px; padding: 4px; border-radius: 99px; border: 1px solid var(--line); background: var(--glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-.sleep-switch button { border: 0; background: none; padding: 9px 16px; border-radius: 99px; cursor: pointer; font-size: .9rem; color: var(--mist); transition: background .3s, color .3s; }
-.sleep-switch button[aria-pressed="true"] { background: var(--star); color: var(--space); font-weight: 600; }
-.sleep-note { font-size: .88rem; color: var(--mist); text-align: center; min-height: 1.5em; }
-@media (max-width: 860px) {
-  .hero .wrap { grid-template-columns: 1fr; }
-  .hero-art { order: -1; max-width: 460px; margin-inline: auto; width: 100%; }
-  .hero { padding-block: 100px 56px !important; }
+.hero-coords { position: absolute; z-index: 3; font-family: var(--font-mono); font-size: .68rem; letter-spacing: .14em; color: var(--faint); text-transform: uppercase; display: grid; gap: 4px; text-align: left; }
+.hero-coords.tl { left: max(16px, env(safe-area-inset-left, 0px)); top: 118px; }
+.hero-coords.tr { right: max(16px, env(safe-area-inset-right, 0px)); top: 118px; text-align: right; }
+.hero-coords b { color: var(--mars-soft); font-weight: 500; }
+@media (max-width: 1100px) { .hero-coords { display: none; } }
+@media (max-width: 600px) {
+  .hero { padding-block: 96px 36px !important; }
+  .hero h1 .l2 { margin-top: 26vw; }
 }
 
 /* marquee */
@@ -330,34 +333,30 @@ footer .wrap { display: grid; gap: 28px; }
 
 <main id="main">
 <header class="hero band" id="top">
+  <div class="hero-title">
+    <span class="eyebrow scramble">Orthopedic memory foam pillow</span>
+    <h1 id="headline" aria-label="Sleep out of this world.">
+      <span class="ln l1" aria-hidden="true"><span class="w">Sleep</span> <span class="w">out</span> <span class="w">of</span></span>
+      <span class="ln l2" aria-hidden="true"><span class="w">this</span> <em class="w">world.</em></span>
+    </h1>
+  </div>
   <canvas id="stage" aria-hidden="true"></canvas>
-  <div class="wrap">
-    <div class="hero-copy">
-      <span class="eyebrow scramble">Orthopedic memory foam pillow</span>
-      <h1 id="headline">Sleep out of this <em>world.</em></h1>
-      <p class="lede">A contoured memory foam pillow designed to support your neck and help keep your spine aligned, whether you sleep on your back or your side.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary magnetic" href="#bundles">Choose your bundle
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </a>
-        <a class="btn btn-ghost" href="#inside">See what's inside</a>
-      </div>
-      <div class="hero-meta">
-        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg>Free US shipping</span>
-        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>60-night trial</span>
-        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z"/></svg>3-year warranty</span>
-      </div>
+  <div class="hero-fallback" id="heroFallback" hidden></div>
+  <div class="press-hint" id="pressHint" aria-hidden="true"><i></i>Press it. It's memory foam.</div>
+  <div class="hero-coords tl" aria-hidden="true"><span>Mission <b>MP-01</b></span><span>Neck support system</span></div>
+  <div class="hero-coords tr" aria-hidden="true"><span>Trial <b>60 nights</b></span><span>Warranty <b>3 years</b></span></div>
+  <div class="hero-foot">
+    <p class="lede">A contoured memory foam pillow designed to support your neck and help keep your spine aligned, whether you sleep on your back or your side.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary magnetic" href="#bundles">Choose your bundle
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a class="btn btn-ghost" href="#inside">See what's inside</a>
     </div>
-    <div class="hero-art">
-      <div class="art-box" id="artBox">
-        <div class="fallback" id="heroFallback" hidden></div>
-        <div class="press-hint" id="pressHint" aria-hidden="true"><i></i>Press the pillow</div>
-      </div>
-      <div class="sleep-switch" role="group" aria-label="How do you sleep?">
-        <button type="button" aria-pressed="true" data-pose="back">Back sleeper</button>
-        <button type="button" aria-pressed="false" data-pose="side">Side sleeper</button>
-      </div>
-      <p class="sleep-note" id="sleepNote" aria-live="polite">Lower edge under your neck.</p>
+    <div class="hero-meta">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg>Free US shipping</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>60-night trial</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z"/></svg>3-year warranty</span>
     </div>
   </div>
 </header>
@@ -740,8 +739,8 @@ footer .wrap { display: grid; gap: 28px; }
     return camera.position.clone().add(dir.multiplyScalar((zPlane - camera.position.z) / dir.z));
   };
 
-  /* ================= HERO: 3D pressable pillow + Mars ================= */
-  const hero = document.getElementById('top'), stageCv = document.getElementById('stage'), artBox = document.getElementById('artBox');
+  /* ================= HERO: pillow between the lines, orbit ring, Mars horizon ================= */
+  const hero = document.getElementById('top'), stageCv = document.getElementById('stage'), headline = document.getElementById('headline');
   const pressHint = document.getElementById('pressHint');
   let heroAPI = null;
   if (webgl) {
@@ -749,27 +748,48 @@ footer .wrap { display: grid; gap: 28px; }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
     renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(32, 1, .1, 200);
-    camera.position.set(0, 1.6, 14); camera.lookAt(0, 0, 0);
+    const camera = new THREE.PerspectiveCamera(32, 1, .1, 400);
+    camera.position.set(0, .4, 14); camera.lookAt(0, 0, 0);
     stdLights(scene);
 
+    // Mars horizon: huge planet whose top edge rises at the bottom of the hero, lit from behind (sunrise rim)
+    const MR = 26;
     const marsMap = marsTex(); marsMap.encoding = THREE.sRGBEncoding;
-    const mars = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), new THREE.MeshStandardMaterial({ map: marsMap, roughness: 1, metalness: 0 }));
-    mars.rotation.z = .35;
-    const atm = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex('232,116,59'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
-    const marsGroup = new THREE.Group(); marsGroup.add(atm, mars); scene.add(marsGroup);
-    const sun = new THREE.DirectionalLight(0xFFE2CC, .9); sun.position.set(-10, 4, 8); scene.add(sun);
+    const marsMat = new THREE.MeshStandardMaterial({ map: marsMap, roughness: 1, metalness: 0, color: 0x8F5C58 });
+    const mars = new THREE.Mesh(new THREE.SphereGeometry(MR, 96, 64), marsMat);
+    const atmMat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      uniforms: { c: { value: new THREE.Color(0xE8743B) }, p: { value: 3.4 }, k: { value: 1.05 } },
+      vertexShader: 'varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix * vec4(position,1.); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }',
+      fragmentShader: 'uniform vec3 c; uniform float p; uniform float k; varying vec3 vN; varying vec3 vV; void main(){ float f = pow(1. - max(dot(vN, vV), 0.), p) * k; gl_FragColor = vec4(c * f, f); }',
+    });
+    const atm = new THREE.Mesh(new THREE.SphereGeometry(MR * 1.035, 96, 64), atmMat);
+    const marsGroup = new THREE.Group(); marsGroup.add(mars, atm); scene.add(marsGroup);
+    const sunrise = new THREE.DirectionalLight(0xFFD2B0, 1.7); sunrise.position.set(-6, 14, -18); scene.add(sunrise);
 
+    // Pillow
     const geo = pillowGeometry({ N: 110, M: 70 });
     const pillow = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xD9D1F0, roughness: .9, metalness: 0, bumpMap: knitTex(), bumpScale: .012 }));
-    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: glowTex('8,6,30'), transparent: true, depthWrite: false, opacity: .9 }));
-    shadow.rotation.x = -Math.PI / 2; shadow.scale.set(7.5, 9, 1); shadow.position.y = -.25;
-    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex('91,75,138'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: .9 }));
-    halo.scale.set(11, 8, 1); halo.position.set(0, .8, -2);
-    const spin = new THREE.Group(); spin.add(pillow, shadow);
-    const holder = new THREE.Group(); holder.add(halo, spin); scene.add(holder);
-    const BASE_RY = -1.22;
-    spin.rotation.set(.14, BASE_RY, 0);
+    pillow.position.y = -.55;
+    const spin = new THREE.Group(); spin.add(pillow);
+    const squash = new THREE.Group(); squash.add(spin);
+
+    // Orbit rings + moon around the pillow
+    const orbit = new THREE.Group();
+    const ellipse = (rx, rz, n = 240) => { const a = []; for (let i = 0; i <= n; i++) { const t = i / n * Math.PI * 2; a.push(new THREE.Vector3(Math.cos(t) * rx, 0, Math.sin(t) * rz)); } return new THREE.BufferGeometry().setFromPoints(a); };
+    const ring1 = new THREE.Line(ellipse(5.4, 5.4), new THREE.LineBasicMaterial({ color: 0xF2A07A, transparent: true, opacity: .55 }));
+    const ring2 = new THREE.Line(ellipse(6.6, 6.6), new THREE.LineDashedMaterial({ color: 0xF5F3FF, transparent: true, opacity: .28, dashSize: .18, gapSize: .22 }));
+    ring2.computeLineDistances();
+    const moon = new THREE.Mesh(new THREE.SphereGeometry(.24, 32, 24), new THREE.MeshStandardMaterial({ color: 0xF5F3FF, emissive: 0xF2A07A, emissiveIntensity: .35, roughness: .6 }));
+    const moonGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex('242,160,122'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    moonGlow.scale.set(1.6, 1.6, 1); moon.add(moonGlow);
+    const sat = new THREE.Mesh(new THREE.SphereGeometry(.09, 16, 12), new THREE.MeshBasicMaterial({ color: 0xF5F3FF }));
+    orbit.add(ring1, ring2, moon, sat);
+    orbit.rotation.set(1.28, 0, -.32);
+
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex('91,75,138'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: .85 }));
+    halo.scale.set(13, 9, 1); halo.position.set(0, 0, -3);
+    const holder = new THREE.Group(); holder.add(halo, squash, orbit); scene.add(holder);
 
     // memory-foam imprints: sink fast, recover slowly
     const imprints = [];
@@ -786,17 +806,17 @@ footer .wrap { display: grid; gap: 28px; }
     hero.addEventListener('pointerdown', e => {
       if (isUI(e)) return;
       const p = hitLocal(e); if (!p) return;
-      pressing = true; activeImp = { x: p.x, z: p.z, s: 0, target: .55, hold: true }; imprints.push(activeImp);
+      pressing = true; activeImp = { x: p.x, z: p.z, s: 0, target: .6, hold: true }; imprints.push(activeImp);
       pressHint.classList.add('gone');
     });
     hero.addEventListener('pointermove', e => {
       pointerN.x = (e.clientX / window.innerWidth) * 2 - 1; pointerN.y = (e.clientY / window.innerHeight) * 2 - 1;
       const p = hitLocal(e);
-      hero.style.cursor = p ? (pressing ? 'grabbing' : 'grab') : '';
+      hero.style.cursor = p && !isUI(e) ? (pressing ? 'grabbing' : 'grab') : '';
       if (pressing && activeImp && p) {
-        if (Math.hypot(p.x - activeImp.x, p.z - activeImp.z) > .28) { activeImp.hold = false; activeImp = { x: p.x, z: p.z, s: activeImp.s, target: .55, hold: true }; imprints.push(activeImp); }
+        if (Math.hypot(p.x - activeImp.x, p.z - activeImp.z) > .28) { activeImp.hold = false; activeImp = { x: p.x, z: p.z, s: activeImp.s, target: .6, hold: true }; imprints.push(activeImp); }
       } else if (FINE && p && !pressing) {
-        if (!hoverImp || Math.hypot(p.x - hoverImp.x, p.z - hoverImp.z) > .35) { if (hoverImp) hoverImp.hold = false; hoverImp = { x: p.x, z: p.z, s: 0, target: .12, hold: true }; imprints.push(hoverImp); }
+        if (!hoverImp || Math.hypot(p.x - hoverImp.x, p.z - hoverImp.z) > .35) { if (hoverImp) hoverImp.hold = false; hoverImp = { x: p.x, z: p.z, s: 0, target: .13, hold: true }; imprints.push(hoverImp); }
       } else if (hoverImp) { hoverImp.hold = false; hoverImp = null; }
     });
     const release = () => { pressing = false; if (activeImp) activeImp.hold = false; activeImp = null; };
@@ -822,56 +842,73 @@ footer .wrap { display: grid; gap: 28px; }
       dirty = imprints.length > 0;
     }
 
+    // layout: pillow centered in the gap between the two headline lines; Mars top edge near the bottom of the hero
+    const base = { holder: new THREE.Vector3(), mars: new THREE.Vector3() };
     function layout() {
       const r = stageCv.getBoundingClientRect(), cw = r.width, ch = r.height;
       renderer.setSize(cw, ch, false); camera.aspect = cw / ch; camera.updateProjectionMatrix(); camera.updateMatrixWorld(true);
-      const a = artBox.getBoundingClientRect();
-      const nx = ((a.left + a.width / 2 - r.left) / cw) * 2 - 1, ny = -((a.top + a.height * .52 - r.top) / ch) * 2 + 1;
-      holder.position.copy(worldAt(camera, nx, ny, 0));
+      const l1 = headline.querySelector('.l1').getBoundingClientRect(), l2 = headline.querySelector('.l2').getBoundingClientRect();
+      const gx = r.left + cw / 2, gy = (l1.bottom + l2.top) / 2;
+      base.holder.copy(worldAt(camera, ((gx - r.left) / cw) * 2 - 1, -((gy - r.top) / ch) * 2 + 1, 0));
       const upp = (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z) / ch;
-      holder.scale.setScalar((a.width * .9 * upp) / 6.6);
-      const narrow = cw < 860;
-      marsGroup.position.copy(worldAt(camera, narrow ? .7 : .84, narrow ? .82 : .62, -14));
-      const mr = narrow ? 2.0 : 3.1;
-      mars.scale.setScalar(mr); atm.scale.set(mr * 3.6, mr * 3.6, 1);
+      const targetPx = Math.min(cw * (cw < 600 ? .78 : .5), 640);
+      holder.scale.setScalar((targetPx * upp) / 6.4);
+      const top = worldAt(camera, 0, cw < 600 ? -.93 : -.76, -30);
+      base.mars.set(top.x, top.y - MR, -30);
+      if (cw >= 860) { pressHint.style.left = `${cw / 2 + targetPx * .52}px`; pressHint.style.top = `${gy - r.top - 16}px`; pressHint.style.transform = 'none'; }
+      else { pressHint.style.left = '50%'; pressHint.style.top = `${l2.bottom - r.top + 12}px`; pressHint.style.transform = 'translate(-50%, 0)'; }
     }
     layout();
     let lt; window.addEventListener('resize', () => { clearTimeout(lt); lt = setTimeout(layout, 120); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
 
-    let heroVisible = true, scrollP = 0, poseRY = 0, tAcc = 0;
+    const intro = { drop: REDUCED ? 0 : 1, rise: REDUCED ? 0 : 1, sq: 0, ring: REDUCED ? 1 : 0 };
+    let heroVisible = true, scrollP = 0, tAcc = 0, spinY = -1.15;
     new IntersectionObserver(es => { heroVisible = es[0].isIntersecting; }).observe(hero);
     const clock = new THREE.Clock();
     function frame() {
       const dt = Math.min(clock.getDelta(), .05); tAcc += dt;
       if (heroVisible) {
         updateImprints(dt);
-        if (!REDUCED) {
-          spin.position.y = Math.sin(tAcc * 1.1) * .18;
-          spin.rotation.x = .14 + pointerN.y * .06 + scrollP * .5;
-          spin.rotation.y += ((BASE_RY + poseRY + pointerN.x * .18 + scrollP * 1.2) - spin.rotation.y) * .06;
-          spin.rotation.z = Math.sin(tAcc * .7) * .025;
-          shadow.material.opacity = .9 - Math.sin(tAcc * 1.1) * .2;
-          mars.rotation.y += dt * .04;
-        } else spin.rotation.y = BASE_RY + poseRY;
+        const motion = REDUCED ? 0 : 1;
+        if (!pressing) spinY += dt * .16 * motion;
+        spin.rotation.set(.16 + pointerN.y * .05 * motion + scrollP * .6, spinY + pointerN.x * .25 * motion, Math.sin(tAcc * .7) * .03 * motion);
+        holder.position.set(base.holder.x, base.holder.y + intro.drop * 9 + Math.sin(tAcc * 1.1) * .12 * motion + scrollP * 2.6, base.holder.z);
+        squash.scale.set(1 + intro.sq * .12, 1 - intro.sq * .22, 1 + intro.sq * .12);
+        orbit.rotation.y = tAcc * .12 * motion;
+        orbit.scale.setScalar(.6 + .4 * intro.ring + scrollP * .5);
+        ring1.material.opacity = .55 * intro.ring; ring2.material.opacity = .28 * intro.ring;
+        const a = tAcc * .55 * motion + 1.2;
+        moon.position.set(Math.cos(a) * 5.4, 0, Math.sin(a) * 5.4); moon.visible = intro.ring > .2;
+        const b = -tAcc * .3 * motion;
+        sat.position.set(Math.cos(b) * 6.6, 0, Math.sin(b) * 6.6); sat.visible = intro.ring > .2;
+        marsGroup.position.set(base.mars.x, base.mars.y - intro.rise * 10 + scrollP * 7, base.mars.z);
+        mars.rotation.y += dt * .012 * motion;
+        camera.position.x += ((pointerN.x * .7 * motion) - camera.position.x) * .04;
+        camera.position.y += ((.4 - pointerN.y * .4 * motion) - camera.position.y) * .04;
+        camera.lookAt(0, 0, 0);
         renderer.render(scene, camera);
       }
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
-    heroAPI = { setPose: side => { poseRY = side ? Math.PI : 0; }, setScroll: p => { scrollP = p; } };
+    heroAPI = {
+      setScroll: p => { scrollP = p; },
+      introTimeline: () => {
+        const tl = gsap.timeline({ delay: .25 });
+        tl.to(intro, { rise: 0, duration: 1.8, ease: 'power3.out' }, 0)
+          .to(intro, { drop: 0, duration: .95, ease: 'power3.in' }, .35)
+          .to(intro, { sq: 1, duration: .1, ease: 'power2.out' }, 1.3)
+          .to(intro, { sq: 0, duration: .9, ease: 'elastic.out(1, .35)' }, 1.4)
+          .to(intro, { ring: 1, duration: 1.2, ease: 'power3.out' }, 1.35);
+        return tl;
+      },
+    };
   } else {
     const fb = document.getElementById('heroFallback'); fb.hidden = false;
     fb.innerHTML = `<svg viewBox="0 0 ${W} 190" role="img" aria-label="Illustration of the contoured Mars Pillow">${DEFS}<g transform="translate(16,-18)"><path d="${slab(0, 1)}" fill="url(#pgBack)"/></g><path d="${slab(0, 1)}" fill="url(#pgFront)"/></svg>`;
     pressHint.hidden = true;
   }
-
-  const sleepNote = document.getElementById('sleepNote');
-  document.querySelectorAll('.sleep-switch button').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('.sleep-switch button').forEach(x => x.setAttribute('aria-pressed', x === b));
-    const side = b.dataset.pose === 'side';
-    sleepNote.textContent = side ? 'Higher edge fills the gap between shoulder and head.' : 'Lower edge under your neck.';
-    if (heroAPI) heroAPI.setPose(side);
-  }));
 
   /* ================= INSIDE: exploded 3D layers ================= */
   const LAYERS = [
@@ -1108,17 +1145,6 @@ footer .wrap { display: grid; gap: 28px; }
   window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
   window.addEventListener('resize', skyResize);
 
-  /* ================= Headline words ================= */
-  const hl = document.getElementById('headline');
-  hl.setAttribute('aria-label', hl.textContent);
-  [...hl.childNodes].forEach(n => {
-    if (n.nodeType === 3) {
-      const frag = document.createDocumentFragment();
-      n.textContent.split(/(\s+)/).forEach(part => { if (!part) return; if (/^\s+$/.test(part)) frag.appendChild(document.createTextNode(part)); else { const s = document.createElement('span'); s.className = 'w'; s.setAttribute('aria-hidden', 'true'); s.textContent = part; frag.appendChild(s); } });
-      n.replaceWith(frag);
-    } else if (n.nodeType === 1) { n.classList.add('w'); n.setAttribute('aria-hidden', 'true'); }
-  });
-
   if (!hasGsap || !hasST || REDUCED) { setOn(3); exState.p = 1; goodVerts.forEach(c => c.setAttribute('cy', 128)); return; }
 
   /* ================= Motion ================= */
@@ -1135,10 +1161,12 @@ footer .wrap { display: grid; gap: 28px; }
   }
   document.querySelectorAll('.scramble').forEach(el => ScrollTrigger.create({ trigger: el, start: 'top 92%', once: true, onEnter: () => scramble(el) }));
 
-  gsap.from('#headline .w', { y: 60, opacity: 0, rotate: 3, duration: 1, ease: 'power4.out', stagger: .09, delay: .15 });
-  gsap.from('.hero-copy > :not(h1)', { y: 18, opacity: 0, duration: .8, ease: 'power2.out', stagger: .1, delay: .6 });
-  gsap.from('#stage', { opacity: 0, duration: 1.6, ease: 'power2.out' });
-  if (heroAPI) ScrollTrigger.create({ trigger: '#top', start: 'top top', end: 'bottom top', scrub: true, onUpdate: s => heroAPI.setScroll(s.progress) });
+  gsap.from('#headline .w', { yPercent: 110, opacity: 0, rotate: 4, duration: 1.1, ease: 'power4.out', stagger: .08, delay: .2 });
+  gsap.from('.hero-foot > *, .hero-coords', { y: 18, opacity: 0, duration: .8, ease: 'power2.out', stagger: .08, delay: 1.2 });
+  if (heroAPI) { heroAPI.introTimeline(); ScrollTrigger.create({ trigger: '#top', start: 'top top', end: 'bottom top', scrub: true, onUpdate: s => heroAPI.setScroll(s.progress) }); }
+  // the two lines split apart as you scroll away
+  gsap.to('#headline .l1', { xPercent: -28, opacity: .15, ease: 'none', scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true } });
+  gsap.to('#headline .l2', { xPercent: 28, opacity: .15, ease: 'none', scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true } });
 
   const track = document.getElementById('marquee');
   let mx = 0, lastSY = window.scrollY, mv = 0;
