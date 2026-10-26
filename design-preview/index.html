@@ -1,0 +1,850 @@
+<title>Mars Pillow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a night-sky scroll — full-bleed bands, content on a 1160px axis, one pinned "exploded pillow" moment as the centerpiece */
+:root {
+  --space: #0B132B;
+  --midnight: #1C2541;
+  --nebula: #5B4B8A;
+  --star: #F5F3FF;
+  --mars: #E8743B;
+  --mars-soft: #F2A07A;
+  --mist: rgba(245, 243, 255, .72);
+  --faint: rgba(245, 243, 255, .5);
+  --line: rgba(245, 243, 255, .12);
+  --glass: rgba(28, 37, 65, .55);
+  --ok: #8FD3B5;
+  --warn: #F08A8A;
+  --font-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius: 20px;
+  --wrap: 1160px;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--space);
+  color: var(--star);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--space); }
+img, svg, canvas { max-width: 100%; display: block; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--mars); outline-offset: 3px; border-radius: 6px; }
+.skip { position: absolute; left: 16px; top: -60px; background: var(--mars); color: var(--space); padding: 10px 16px; border-radius: 10px; z-index: 100; font-weight: 600; text-decoration: none; }
+.skip:focus { top: 12px; }
+
+.band { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: var(--wrap); margin-inline: auto; }
+section.band { padding-block: clamp(72px, 10vw, 128px); position: relative; }
+
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.05; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h1 { font-size: clamp(3rem, 8.4vw, 6.6rem); }
+h2 { font-size: clamp(2.3rem, 5vw, 3.8rem); }
+h3 { font-size: 1.7rem; }
+h1 em, h2 em { color: var(--mars-soft); }
+p { margin: 0; }
+.lede { color: var(--mist); font-size: 1.15rem; max-width: 34em; }
+.eyebrow { font-family: var(--font-mono); font-size: .76rem; letter-spacing: .16em; text-transform: uppercase; color: var(--mars-soft); display: inline-flex; gap: 10px; align-items: center; }
+.eyebrow::before { content: ""; width: 22px; height: 1px; background: currentColor; }
+.section-head { display: grid; gap: 18px; margin-bottom: 56px; max-width: 760px; }
+.todo { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .06em; border: 1px dashed rgba(242,160,122,.6); color: var(--mars-soft); padding: 1px 6px; border-radius: 6px; white-space: nowrap; vertical-align: middle; }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 15px 26px; border-radius: 999px; font-weight: 600; text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: box-shadow .3s, transform .3s, background .3s; font-size: 1rem; }
+.btn-primary { background: var(--mars); color: var(--space); box-shadow: 0 0 0 0 rgba(232,116,59,.0); }
+.btn-primary:hover { box-shadow: 0 0 36px 4px rgba(232,116,59,.45); transform: translateY(-1px); }
+.btn-ghost { border-color: var(--line); background: rgba(245,243,255,.04); }
+.btn-ghost:hover { border-color: rgba(245,243,255,.35); box-shadow: 0 0 28px rgba(91,75,138,.5); }
+
+/* nav */
+.nav { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 50; transition: background .4s, backdrop-filter .4s, padding .4s, border-color .4s; border-bottom: 1px solid transparent; padding-block: 22px; }
+.nav.scrolled { background: var(--glass); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); border-color: var(--line); padding-block: 12px; }
+.nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.logo { display: flex; align-items: center; gap: 11px; text-decoration: none; font-family: var(--font-display); font-size: 1.55rem; letter-spacing: .01em; }
+.logo svg { width: 30px; height: 30px; }
+.nav-links { display: flex; gap: 30px; list-style: none; margin: 0; padding: 0; font-size: .95rem; color: var(--mist); }
+.nav-links a { text-decoration: none; transition: color .2s; }
+.nav-links a:hover { color: var(--star); }
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.cart-btn { position: relative; width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: rgba(245,243,255,.05); display: grid; place-items: center; cursor: pointer; }
+.cart-btn svg { width: 21px; height: 21px; }
+.cart-count { position: absolute; top: -4px; right: -4px; min-width: 21px; height: 21px; padding: 0 5px; border-radius: 99px; background: var(--mars); color: var(--space); font-size: .72rem; font-weight: 700; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+.cart-count[data-zero="true"] { background: var(--midnight); color: var(--faint); border: 1px solid var(--line); }
+.nav-cta { padding: 11px 20px; font-size: .92rem; }
+@media (max-width: 860px) { .nav-links { display: none; } }
+@media (max-width: 420px) { .nav-cta { display: none; } }
+
+/* hero */
+.hero { position: relative; min-height: min(920px, 100svh); display: flex; align-items: center; overflow: hidden; padding-block: 140px 80px !important; }
+#sky { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.hero::after { content: ""; position: absolute; inset: auto 0 0; height: 180px; background: linear-gradient(to bottom, transparent, var(--space)); z-index: 1; pointer-events: none; }
+.hero .wrap { position: relative; z-index: 2; display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; width: 100%; }
+.hero-copy { display: grid; gap: 28px; min-width: 0; }
+.hero h1 .w { display: inline-block; will-change: transform, opacity; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
+.hero-meta { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: .9rem; color: var(--mist); }
+.hero-meta span { display: inline-flex; align-items: center; gap: 8px; }
+.hero-meta svg { width: 16px; height: 16px; color: var(--mars-soft); }
+.hero-art { position: relative; min-width: 0; }
+.hero-art .float { will-change: transform; filter: drop-shadow(0 40px 60px rgba(0,0,0,.45)); }
+.hero-shadow { width: 62%; height: 26px; margin: 10px auto 0; border-radius: 50%; background: radial-gradient(closest-side, rgba(91,75,138,.55), transparent); }
+.coord { position: absolute; font-family: var(--font-mono); font-size: .7rem; color: var(--faint); letter-spacing: .1em; }
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: 1fr; text-align: left; }
+  .hero-art { order: -1; max-width: 420px; margin-inline: auto; width: 100%; }
+  .hero { padding-block: 110px 56px !important; }
+}
+
+/* benefits */
+.benefits { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.benefit { background: var(--space); padding: 34px 28px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.benefit svg { width: 40px; height: 40px; color: var(--mars-soft); }
+.benefit h3 { font-size: 1.45rem; }
+.benefit p { color: var(--mist); font-size: .97rem; }
+@media (max-width: 960px) { .benefits { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .benefits { grid-template-columns: 1fr; } }
+
+/* inside story */
+.inside { background: radial-gradient(120% 80% at 70% 40%, rgba(91,75,138,.35), transparent 60%), var(--space); }
+.inside-stage { display: grid; grid-template-columns: 1fr 1.25fr; gap: 48px; align-items: center; min-height: 82vh; }
+.layer-list { list-style: none; margin: 36px 0 0; padding: 0; display: grid; gap: 4px; counter-reset: layer; }
+.layer-list li { display: grid; grid-template-columns: 54px 1fr; gap: 4px 12px; padding: 16px 0; border-top: 1px solid var(--line); opacity: .38; transition: opacity .4s; }
+.layer-list li.on { opacity: 1; }
+.layer-list .num { font-family: var(--font-mono); font-size: .78rem; color: var(--mars-soft); padding-top: 5px; grid-row: span 2; }
+.layer-list b { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; line-height: 1.2; }
+.layer-list span.d { color: var(--mist); font-size: .95rem; }
+.exploded { position: relative; min-width: 0; }
+.exploded svg { width: 100%; height: auto; overflow: visible; }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; fill: var(--star); }
+@media (max-width: 860px) {
+  .inside-stage { grid-template-columns: 1fr; min-height: 0; gap: 24px; }
+  .exploded { order: -1; }
+}
+
+/* spine */
+.spine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.spine-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; background: linear-gradient(180deg, rgba(28,37,65,.7), rgba(11,19,43,.6)); display: grid; gap: 16px; min-width: 0; }
+.spine-card.good { border-color: rgba(232,116,59,.45); box-shadow: 0 0 60px -20px rgba(232,116,59,.45); }
+.spine-card header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.spine-card h3 { font-size: 1.6rem; }
+.pill { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; padding: 5px 10px; border-radius: 99px; border: 1px solid currentColor; }
+.pill.bad { color: var(--warn); }
+.pill.good { color: var(--ok); }
+.spine-card p { color: var(--mist); font-size: .97rem; }
+.spine-card svg { width: 100%; height: auto; }
+@media (max-width: 760px) { .spine-grid { grid-template-columns: 1fr; } }
+
+/* bundles */
+.bundles-layout { display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: start; }
+.bundle-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.bundle { position: relative; text-align: left; padding: 24px; border-radius: var(--radius); border: 1px solid var(--line); background: rgba(28,37,65,.55); cursor: pointer; display: grid; gap: 10px; align-content: start; transition: border-color .3s, background .3s, transform .3s; min-width: 0; }
+.bundle:hover { border-color: rgba(245,243,255,.3); transform: translateY(-2px); }
+.bundle[aria-checked="true"] { border-color: var(--mars); background: rgba(232,116,59,.08); animation: glow 2.6s ease-in-out infinite; }
+@keyframes glow { 0%,100% { box-shadow: 0 0 0 1px var(--mars), 0 0 26px -6px rgba(232,116,59,.55); } 50% { box-shadow: 0 0 0 1px var(--mars), 0 0 44px -4px rgba(232,116,59,.75); } }
+.bundle .badge { position: absolute; top: -11px; right: 18px; background: var(--mars); color: var(--space); font-size: .72rem; font-weight: 700; padding: 4px 10px; border-radius: 99px; letter-spacing: .02em; }
+.bundle .badge.alt { background: var(--star); }
+.bundle .b-name { font-family: var(--font-display); font-size: 1.6rem; line-height: 1.1; }
+.bundle .b-inc { color: var(--mist); font-size: .92rem; }
+.bundle .b-price { display: flex; align-items: baseline; gap: 10px; font-variant-numeric: tabular-nums; flex-wrap: wrap; }
+.bundle .b-price strong { font-size: 1.5rem; font-weight: 700; }
+.bundle .b-price s { color: var(--faint); }
+.bundle .b-save { font-size: .8rem; color: var(--ok); font-weight: 600; }
+.bundle .units { display: flex; gap: 6px; margin-top: 4px; }
+.bundle .units i { display: block; height: 7px; border-radius: 4px; background: var(--mars-soft); }
+.bundle .units i.cv { background: var(--nebula); }
+.summary { position: sticky; top: 96px; border-radius: var(--radius); border: 1px solid var(--line); background: linear-gradient(160deg, rgba(91,75,138,.35), rgba(28,37,65,.8)); padding: 30px; display: grid; gap: 18px; min-width: 0; }
+.summary .s-label { font-family: var(--font-mono); font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+.summary .s-name { font-family: var(--font-display); font-size: 2.1rem; line-height: 1.05; }
+.summary .s-price { display: flex; align-items: baseline; gap: 12px; font-variant-numeric: tabular-nums; flex-wrap: wrap; }
+.summary .s-price strong { font-size: 2.6rem; font-weight: 700; letter-spacing: -.02em; }
+.summary .s-price s { color: var(--faint); font-size: 1.1rem; }
+.save-chip { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; border-radius: 99px; background: rgba(143,211,181,.12); color: var(--ok); font-size: .88rem; font-weight: 600; width: fit-content; }
+.save-chip[hidden] { display: none !important; }
+.summary ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; color: var(--mist); font-size: .95rem; }
+.summary li { display: flex; gap: 10px; }
+.summary li::before { content: "✦"; color: var(--mars-soft); font-size: .8rem; padding-top: 3px; }
+.summary .btn { width: 100%; }
+.fine { font-size: .82rem; color: var(--faint); }
+@media (max-width: 960px) { .bundles-layout { grid-template-columns: 1fr; } .summary { position: static; } }
+@media (max-width: 520px) { .bundle-grid { grid-template-columns: 1fr; } }
+
+/* compare */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+table { width: 100%; border-collapse: collapse; min-width: 560px; }
+th, td { padding: 18px 22px; text-align: left; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+thead th { font-family: var(--font-mono); font-size: .76rem; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+thead th.us { color: var(--mars-soft); }
+td.us { background: rgba(232,116,59,.06); }
+td .yes { color: var(--ok); font-weight: 600; }
+td .no { color: var(--faint); }
+
+/* reviews placeholder */
+.review-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.slot { border: 1px dashed rgba(245,243,255,.22); border-radius: var(--radius); padding: 28px; min-height: 180px; display: grid; place-content: center; text-align: center; gap: 8px; color: var(--faint); font-size: .95rem; }
+.slot b { font-family: var(--font-display); font-weight: 400; color: var(--mist); font-size: 1.35rem; }
+@media (max-width: 760px) { .review-slots { grid-template-columns: 1fr; } }
+
+/* trial strip */
+.strip { background: var(--midnight); border-block: 1px solid var(--line); padding-block: 30px !important; }
+.strip .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px 36px; }
+.strip div.item { display: flex; align-items: center; gap: 12px; font-weight: 500; }
+.strip svg { width: 26px; height: 26px; color: var(--mars-soft); flex: none; }
+
+/* faq */
+.faq-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 48px; }
+.faq details { border-top: 1px solid var(--line); padding: 20px 0; }
+.faq details:last-child { border-bottom: 1px solid var(--line); }
+.faq summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 18px; font-size: 1.1rem; font-weight: 500; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-family: var(--font-mono); color: var(--mars-soft); font-size: 1.3rem; line-height: 1; transition: transform .3s; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { color: var(--mist); padding-top: 12px; max-width: 60ch; }
+@media (max-width: 860px) { .faq-grid { grid-template-columns: 1fr; gap: 24px; } }
+
+/* final cta */
+.final { text-align: center; overflow: hidden; }
+.final .wrap { display: grid; justify-items: center; gap: 26px; position: relative; z-index: 1; }
+.final .planet { position: absolute; width: 900px; height: 900px; left: 50%; top: 62%; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(circle at 50% 30%, rgba(232,116,59,.55), rgba(232,116,59,.12) 40%, transparent 66%); filter: blur(10px); z-index: 0; pointer-events: none; }
+
+/* footer */
+footer { border-top: 1px solid var(--line); padding-block: 48px 40px; color: var(--mist); font-size: .92rem; }
+footer .wrap { display: grid; gap: 28px; }
+.foot-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px; }
+.foot-links { display: flex; flex-wrap: wrap; gap: 10px 24px; list-style: none; margin: 0; padding: 0; }
+.foot-links a { text-decoration: none; }
+.foot-links a:hover { color: var(--star); }
+.disclaimer { font-size: .8rem; color: var(--faint); max-width: 80ch; }
+
+/* cart drawer */
+.scrim { position: fixed; inset: 0; background: rgba(5,8,20,.6); backdrop-filter: blur(3px); z-index: 70; opacity: 0; pointer-events: none; transition: opacity .3s; }
+.scrim.open { opacity: 1; pointer-events: auto; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%); z-index: 80; background: var(--midnight); border-left: 1px solid var(--line); transform: translateX(105%); transition: transform .45s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column; padding: calc(22px + env(safe-area-inset-top, 0px)) max(22px, env(safe-area-inset-right, 0px)) calc(22px + env(safe-area-inset-bottom, 0px)) 22px; }
+.drawer.open { transform: none; }
+.drawer header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.drawer h2 { font-size: 2rem; }
+.icon-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: transparent; cursor: pointer; display: grid; place-items: center; }
+.lines { flex: 1; overflow-y: auto; list-style: none; margin: 0; padding: 8px 0; }
+.line { display: grid; grid-template-columns: 64px 1fr auto; gap: 14px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--line); overflow: hidden; }
+.line .thumb { width: 64px; height: 64px; border-radius: 14px; background: radial-gradient(circle at 30% 30%, rgba(91,75,138,.8), var(--space)); display: grid; place-items: center; }
+.line .thumb svg { width: 50px; }
+.line .ln { font-weight: 600; }
+.line .lp { color: var(--mist); font-size: .9rem; font-variant-numeric: tabular-nums; }
+.qty { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 99px; margin-top: 6px; }
+.qty button { width: 30px; height: 30px; background: none; border: 0; cursor: pointer; font-size: 1rem; }
+.qty span { min-width: 22px; text-align: center; font-variant-numeric: tabular-nums; font-size: .9rem; }
+.remove { background: none; border: 0; color: var(--faint); font-size: .82rem; cursor: pointer; text-decoration: underline; }
+.empty { text-align: center; padding: 60px 10px; color: var(--mist); display: grid; gap: 14px; justify-items: center; }
+.drawer-foot { border-top: 1px solid var(--line); padding-top: 18px; display: grid; gap: 12px; }
+.subtotal { display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 200%); visibility: hidden; background: var(--star); color: var(--space); padding: 12px 20px; border-radius: 99px; font-weight: 600; z-index: 90; transition: transform .4s cubic-bezier(.2,.8,.2,1); font-size: .95rem; max-width: calc(100% - 32px); }
+.toast.show { transform: translate(-50%, 0); visibility: visible; }
+
+.preview-note { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .04em; padding: 7px 12px; border-radius: 10px; background: var(--nebula); color: var(--star); position: fixed; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 45; max-width: min(340px, calc(100% - 24px)); opacity: .92; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
+<a class="skip" href="#main">Skip to content</a>
+<div class="preview-note">Design preview · photos, reviews and [TODO] details will be replaced with real ones</div>
+
+<nav class="nav band" id="nav" aria-label="Main">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="Mars Pillow home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><defs><radialGradient id="lg" cx="35%" cy="35%"><stop offset="0" stop-color="#F2A07A"/><stop offset="1" stop-color="#B9481C"/></radialGradient></defs><circle cx="16" cy="16" r="10" fill="url(#lg)"/><path d="M3 19c6-3.4 20-6.6 26-6" stroke="#F5F3FF" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".85"/></svg>
+      Mars Pillow
+    </a>
+    <ul class="nav-links">
+      <li><a href="#inside">Inside</a></li>
+      <li><a href="#spine">Alignment</a></li>
+      <li><a href="#bundles">Bundles</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a class="btn btn-primary nav-cta" href="#bundles">Shop now</a>
+      <button class="cart-btn" id="cartBtn" aria-label="Open cart, 0 items">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>
+        <span class="cart-count" id="cartCount" data-zero="true">0</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+<header class="hero band" id="top">
+  <canvas id="sky" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="hero-copy">
+      <span class="eyebrow">Orthopedic memory foam pillow</span>
+      <h1 id="headline">Sleep out of this <em>world.</em></h1>
+      <p class="lede">A contoured memory foam pillow designed to support your neck and help keep your spine aligned, whether you sleep on your back or your side.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#bundles">Choose your bundle
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="#inside">See what's inside</a>
+      </div>
+      <div class="hero-meta">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg>Free US shipping</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>100-night trial <span class="todo">TODO</span></span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="float" id="heroPillow"></div>
+      <div class="hero-shadow" id="heroShadow"></div>
+    </div>
+  </div>
+</header>
+
+<section class="band" aria-labelledby="why-h">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Why it feels different</span>
+      <h2 id="why-h">Shaped around the curve of your neck.</h2>
+    </div>
+    <div class="benefits">
+      <div class="benefit">
+        <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 26c4-10 9-12 13-8s8 6 13-2 6 2 6 10"/><path d="M4 32h32"/></svg>
+        <h3>Contoured support</h3>
+        <p>A raised neck roll and a gentle dip for your head help hold your neck in a natural position.</p>
+      </div>
+      <div class="benefit">
+        <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="20" r="5"/><path d="M20 20h16M20 14h12M20 26h12"/></svg>
+        <h3>Back and side sleepers</h3>
+        <p>Two contour heights, one on each long edge. Turn the pillow to match how you sleep.</p>
+      </div>
+      <div class="benefit">
+        <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 4v32M8 10l24 20M32 10 8 30"/><circle cx="20" cy="20" r="4"/></svg>
+        <h3>Sleeps cool</h3>
+        <p>A breathable cooling layer sits between you and the foam. <span class="todo">TODO confirm</span></p>
+      </div>
+      <div class="benefit">
+        <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="7" y="9" width="26" height="22" rx="5"/><path d="M7 16h26M14 9V5M26 9V5"/></svg>
+        <h3>Washable cover</h3>
+        <p>Unzip the cover and machine wash it. The foam core stays inside, fresh and in shape.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band inside" id="inside" aria-labelledby="inside-h">
+  <div class="wrap inside-stage" id="insideStage">
+    <div>
+      <span class="eyebrow">Inside the Mars Pillow</span>
+      <h2 id="inside-h" style="margin-top:18px">Four layers, one job: <em>hold your neck.</em></h2>
+      <ol class="layer-list" id="layerList">
+        <li data-i="0"><span class="num">L/01</span><b>Breathable cover</b><span class="d">Soft knit you can zip off and wash. <span class="todo">TODO fabric</span></span></li>
+        <li data-i="1"><span class="num">L/02</span><b>Cooling layer</b><span class="d">Helps move heat away from your face and neck. <span class="todo">TODO</span></span></li>
+        <li data-i="2"><span class="num">L/03</span><b>Memory foam core</b><span class="d">Slow-recovery foam that softens under your head and stays firm under your neck.</span></li>
+        <li data-i="3"><span class="num">L/04</span><b>Contour base</b><span class="d">The wave shape that gives the pillow its two heights. <span class="todo">TODO cm/in</span></span></li>
+      </ol>
+    </div>
+    <div class="exploded" id="exploded" aria-hidden="true"></div>
+  </div>
+</section>
+
+<section class="band" id="spine" aria-labelledby="spine-h">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Spine alignment</span>
+      <h2 id="spine-h">A straighter line from head to shoulders.</h2>
+      <p class="lede">A flat pillow can let your head tip and your neck bend. A contoured shape fills the gap under your neck so it rests closer to a neutral line. Many sleepers find that more comfortable.</p>
+    </div>
+    <div class="spine-grid">
+      <article class="spine-card">
+        <header><h3>Regular pillow</h3><span class="pill bad">Neck bent</span></header>
+        <svg viewBox="0 0 360 190" id="spineBad" role="img" aria-label="Side view: on a flat pillow the neck curves upward"></svg>
+        <p>Your head sinks or tilts up, and your neck bends to follow it.</p>
+      </article>
+      <article class="spine-card good">
+        <header><h3>Mars Pillow</h3><span class="pill good">Aligned</span></header>
+        <svg viewBox="0 0 360 190" id="spineGood" role="img" aria-label="Side view: on the Mars Pillow the neck rests in a straight line"></svg>
+        <p>The neck roll supports the gap, so your neck rests in a straighter line.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="bundles" aria-labelledby="bundles-h" style="background:linear-gradient(180deg, var(--space), var(--midnight) 60%, var(--space))">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Bundles</span>
+      <h2 id="bundles-h">Pick your mission.</h2>
+      <p class="lede">Every bundle ships free within the US. The more you bundle, the more you save.</p>
+    </div>
+    <div class="bundles-layout">
+      <div class="bundle-grid" role="radiogroup" aria-label="Choose a bundle" id="bundleGrid"></div>
+      <aside class="summary" aria-live="polite">
+        <span class="s-label">Your selection</span>
+        <div class="s-name" id="sName"></div>
+        <div class="s-price"><strong id="sPrice"></strong><s id="sCompare"></s></div>
+        <span class="save-chip" id="sSave"></span>
+        <ul id="sInc"></ul>
+        <button class="btn btn-primary" id="addBtn">Add to cart</button>
+        <p class="fine">Secure checkout with card or PayPal. Prices in USD.</p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section class="band" aria-labelledby="cmp-h">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Side by side</span>
+      <h2 id="cmp-h">Mars Pillow vs. a regular pillow.</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Feature</th><th scope="col" class="us">Mars Pillow</th><th scope="col">Regular pillow</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Shape</th><td class="us">Contoured, two heights</td><td>Flat or rounded</td></tr>
+          <tr><th scope="row">Neck support</th><td class="us"><span class="yes">Built-in neck roll</span></td><td><span class="no">None</span></td></tr>
+          <tr><th scope="row">Fill</th><td class="us">Memory foam core</td><td>Fiber or feathers that flatten</td></tr>
+          <tr><th scope="row">Cooling layer</th><td class="us"><span class="yes">Yes</span> <span class="todo">TODO</span></td><td><span class="no">Usually not</span></td></tr>
+          <tr><th scope="row">Washable cover</th><td class="us"><span class="yes">Zip-off, machine washable</span></td><td>Varies</td></tr>
+          <tr><th scope="row">Risk-free trial</th><td class="us"><span class="yes">100 nights</span> <span class="todo">TODO</span></td><td><span class="no">Rarely</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="band" aria-labelledby="rev-h" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Reviews</span>
+      <h2 id="rev-h">From real sleepers.</h2>
+    </div>
+    <div class="review-slots">
+      <div class="slot"><b>Reviews will appear here</b>Only verified customer reviews</div>
+      <div class="slot"><b>Reviews will appear here</b>Only verified customer reviews</div>
+      <div class="slot"><b>Reviews will appear here</b>Only verified customer reviews</div>
+    </div>
+  </div>
+</section>
+
+<div class="band strip">
+  <div class="wrap">
+    <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>100-night sleep trial <span class="todo">TODO</span></div>
+    <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z"/></svg>Warranty <span class="todo">TODO years</span></div>
+    <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/></svg>Free US shipping, <span class="todo">TODO days</span></div>
+    <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Secure checkout</div>
+  </div>
+</div>
+
+<section class="band faq" id="faq" aria-labelledby="faq-h">
+  <div class="wrap faq-grid">
+    <div class="section-head" style="margin:0">
+      <span class="eyebrow">FAQ</span>
+      <h2 id="faq-h">Questions, answered.</h2>
+      <p class="lede">Can't find yours? Email us at <span class="todo">TODO email</span>.</p>
+    </div>
+    <div>
+      <details><summary>Which side should I sleep on?</summary><p>Back sleepers usually prefer the lower edge under the neck. Side sleepers usually prefer the higher edge, which fills the space between the shoulder and the head. Try both during your first few nights.</p></details>
+      <details><summary>How long does the trial last?</summary><p>You can sleep on it for 100 nights <span class="todo">TODO</span>. If it isn't right for you, contact us for a return.</p></details>
+      <details><summary>How do I wash it?</summary><p>Unzip the cover and machine wash it cold, then air dry. Don't wash the foam core. Air it out instead. <span class="todo">TODO confirm care</span></p></details>
+      <details><summary>Does it smell when I open it?</summary><p>New memory foam can have a light smell for a day or two. Let it air out in a ventilated room.</p></details>
+      <details><summary>How fast does it ship?</summary><p>Orders ship free within the US and arrive in <span class="todo">TODO</span> business days.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="band final" aria-labelledby="final-h">
+  <div class="planet" aria-hidden="true"></div>
+  <div class="wrap">
+    <span class="eyebrow">Ready for liftoff</span>
+    <h2 id="final-h">Tonight could feel <em>different.</em></h2>
+    <p class="lede">Start with one pillow, or bring one home for everyone in the bed.</p>
+    <a class="btn btn-primary" href="#bundles">Shop Mars Pillow</a>
+  </div>
+</section>
+</main>
+
+<footer class="band">
+  <div class="wrap">
+    <div class="foot-top">
+      <a class="logo" href="#top">Mars Pillow</a>
+      <ul class="foot-links">
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#top">Shipping Policy</a></li>
+        <li><a href="#top">Returns &amp; Refunds</a></li>
+        <li><a href="#top">Privacy Policy</a></li>
+        <li><a href="#top">Terms of Service</a></li>
+        <li><a href="#top">Accessibility</a></li>
+        <li><a href="#top">Contact</a></li>
+      </ul>
+    </div>
+    <p class="disclaimer">This product is not intended to diagnose, treat, cure or prevent any disease. If you have ongoing neck or back pain, talk to your doctor. © 2026 Mars Pillow. <span class="todo">TODO business address</span></p>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Cart" aria-hidden="true">
+  <header><h2>Your cart</h2><button class="icon-btn" id="closeCart" aria-label="Close cart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+  <ul class="lines" id="lines"></ul>
+  <div class="drawer-foot">
+    <div class="subtotal"><span>Subtotal</span><span id="subtotal">$0</span></div>
+    <p class="fine">Free shipping within the US. Taxes calculated at checkout.</p>
+    <button class="btn btn-primary" id="checkoutBtn">Checkout</button>
+  </div>
+</aside>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(() => {
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasGsap = typeof gsap !== 'undefined';
+  if (hasGsap && typeof ScrollTrigger !== 'undefined') gsap.registerPlugin(ScrollTrigger);
+
+  /* ---------- Offers (mirrors the server config later) ---------- */
+  const OFFERS = [
+    { id: 'single', name: 'Mars Pillow', price: 99, compare: null, inc: ['1 Mars Pillow', 'Washable cover included'], units: ['p'] },
+    { id: 'sleep-pack', name: 'Mars Sleep Pack', price: 129, compare: 138, inc: ['1 Mars Pillow', '1 extra Mars Cover'], units: ['p', 'c'] },
+    { id: 'twin-pack', name: 'Mars Twin Pack', price: 179, compare: 198, inc: ['2 Mars Pillows', 'One for each side of the bed'], units: ['p', 'p'], badge: 'Most Popular' },
+    { id: 'interstellar', name: 'Interstellar Suite', price: 229, compare: 276, inc: ['2 Mars Pillows', '2 extra Mars Covers'], units: ['p', 'p', 'c', 'c'], badge: 'Best Value', alt: true },
+  ];
+  const fmt = n => '$' + n.toLocaleString('en-US');
+  const savings = o => o.compare ? { usd: o.compare - o.price, pct: Math.round((o.compare - o.price) / o.compare * 100) } : null;
+
+  /* ---------- Pillow geometry ---------- */
+  const W = 420, B = 150, HMAX = 92, X0 = 20, X1 = 400, N = 70;
+  const g = (x, m, s) => Math.exp(-((x - m) ** 2) / (2 * s * s));
+  const h = x => (0.5 + 0.5 * g(x, 0.2, 0.13) + 0.28 * g(x, 0.8, 0.15)) * Math.pow(Math.sin(Math.PI * x), 0.32);
+  const pt = (t, f) => [X0 + t * (X1 - X0), B - f * HMAX * h(t)];
+  function slab(f1, f2) {
+    let d = '';
+    for (let i = 0; i <= N; i++) { const [x, y] = pt(i / N, f2); d += (i ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); }
+    for (let i = N; i >= 0; i--) { const [x, y] = pt(i / N, f1); d += 'L' + x.toFixed(1) + ',' + y.toFixed(1); }
+    return d + 'Z';
+  }
+  function topLine(f) {
+    let d = '';
+    for (let i = 2; i <= N - 2; i++) { const [x, y] = pt(i / N, f); d += (i > 2 ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); }
+    return d;
+  }
+  const DEFS = `
+    <defs>
+      <linearGradient id="pgFront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5F3FF"/><stop offset=".55" stop-color="#D9D2F2"/><stop offset="1" stop-color="#8F84BF"/></linearGradient>
+      <linearGradient id="pgBack" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B7AEE0"/><stop offset="1" stop-color="#5B4B8A"/></linearGradient>
+      <linearGradient id="pgCool" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7FC8E8"/><stop offset="1" stop-color="#A9B8F5"/></linearGradient>
+      <linearGradient id="pgFoam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EDE6FF"/><stop offset="1" stop-color="#B8ABE3"/></linearGradient>
+      <linearGradient id="pgBase" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C6CB4"/><stop offset="1" stop-color="#3E3366"/></linearGradient>
+      <pattern id="pores" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#5B4B8A" opacity=".28"/><circle cx="6.5" cy="6" r=".7" fill="#5B4B8A" opacity=".22"/></pattern>
+      <pattern id="dots" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="3.5" cy="3.5" r="1.1" fill="#F5F3FF" opacity=".55"/></pattern>
+      <pattern id="knit" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><path d="M0 3h6" stroke="#5B4B8A" stroke-width=".6" opacity=".3"/></pattern>
+      <radialGradient id="rim" cx="20%" cy="0%" r="90%"><stop offset="0" stop-color="#E8743B" stop-opacity=".5"/><stop offset="1" stop-color="#E8743B" stop-opacity="0"/></radialGradient>
+    </defs>`;
+
+  // Hero pillow (solid, with depth)
+  const hero = document.getElementById('heroPillow');
+  hero.innerHTML = `<svg viewBox="0 0 ${W} 190" role="img" aria-label="Illustration of the contoured Mars Pillow">${DEFS}
+    <g transform="translate(16,-18)"><path d="${slab(0, 1)}" fill="url(#pgBack)"/></g>
+    <path d="${slab(0, 1)}" fill="url(#pgFront)"/>
+    <path d="${slab(0, 1)}" fill="url(#knit)"/>
+    <path d="${slab(0, 1)}" fill="url(#rim)"/>
+    <path d="${topLine(0.985)}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+    <path d="${topLine(0.08)}" fill="none" stroke="#5B4B8A" stroke-width="1.2" stroke-dasharray="3 5" opacity=".7"/>
+  </svg>`;
+
+  // Exploded layers
+  const LAYERS = [
+    { name: 'COVER', f: [0, 1], fill: 'url(#pgFront)', overlay: 'url(#knit)', op: .22 },
+    { name: 'COOLING', f: [0.86, 1], fill: 'url(#pgCool)', overlay: 'url(#dots)' },
+    { name: 'FOAM CORE', f: [0.3, 0.86], fill: 'url(#pgFoam)', overlay: 'url(#pores)' },
+    { name: 'CONTOUR BASE', f: [0, 0.3], fill: 'url(#pgBase)' },
+  ];
+  const OFF = [-150, -60, 20, 100]; // exploded vertical offsets
+  const ex = document.getElementById('exploded');
+  ex.innerHTML = `<svg viewBox="0 -170 ${W} 400">${DEFS}
+    ${LAYERS.slice().reverse().map((L, ri) => {
+      const i = LAYERS.length - 1 - ri;
+      const isCover = i === 0;
+      const tagY = pt(0.2, L.f[1])[1] - 8;
+      return `<g class="ly" data-i="${i}">
+        <path d="${slab(L.f[0], L.f[1])}" fill="${L.fill}" ${isCover ? `fill-opacity="${L.op}" stroke="#F5F3FF" stroke-opacity=".75" stroke-width="1.4" stroke-dasharray="4 4"` : ''}/>
+        ${L.overlay && !isCover ? `<path d="${slab(L.f[0], L.f[1])}" fill="${L.overlay}"/>` : ''}
+        <g class="lbl" opacity="0"><line x1="${W - 6}" y1="${tagY + 4}" x2="${W + 26}" y2="${tagY + 4}" stroke="#E8743B"/><text class="tag" x="${W + 32}" y="${tagY + 8}">L/0${i + 1} ${L.name}</text></g>
+      </g>`;
+    }).join('')}
+  </svg>`;
+  ex.querySelector('svg').setAttribute('viewBox', `0 -170 ${W + 150} 400`);
+
+  /* ---------- Spine diagrams ---------- */
+  function spineSVG(el, good) {
+    const pill = good
+      ? `<path d="M30 168 C30 128 52 118 74 126 C96 134 104 142 120 142 C140 142 150 128 168 128 C182 128 190 150 190 168Z" fill="url(#pgFront)" opacity=".95"/>`
+      : `<rect x="20" y="138" width="160" height="30" rx="15" fill="#8F84BF" opacity=".85"/>`;
+    const headY = good ? 100 : 86;
+    el.innerHTML = `${DEFS}
+      <line x1="0" y1="168" x2="360" y2="168" stroke="rgba(245,243,255,.18)"/>
+      ${pill}
+      <rect x="150" y="112" width="230" height="56" rx="26" fill="#2B3560"/>
+      <path class="neck" d="M92 ${headY + 10} Q130 ${good ? 112 : 102} 160 118 L160 150 Q120 ${good ? 146 : 150} 92 ${headY + 34}Z" fill="#2B3560"/>
+      <circle class="head" cx="74" cy="${headY}" r="34" fill="#3A4577"/>
+      <g class="vert"></g>
+      <line class="guide" x1="96" y1="128" x2="350" y2="128" stroke="${good ? '#8FD3B5' : '#F08A8A'}" stroke-dasharray="5 6" opacity=".7"/>`;
+    const vert = el.querySelector('.vert');
+    const pts = [];
+    for (let i = 0; i < 9; i++) {
+      const x = 104 + i * 28;
+      const bentY = 128 - Math.max(0, (4 - i)) * 6.5; // neck section rises on a flat pillow
+      pts.push({ x, bent: bentY, straight: 128 });
+    }
+    vert.innerHTML = pts.map(p => `<circle cx="${p.x}" cy="${good ? p.bent : p.bent}" r="5.5" fill="${good ? '#E8743B' : '#F08A8A'}"/>`).join('');
+    return { el, pts, circles: [...vert.querySelectorAll('circle')], head: el.querySelector('.head') };
+  }
+  spineSVG(document.getElementById('spineBad'), false);
+  const goodSpine = spineSVG(document.getElementById('spineGood'), true);
+
+  /* ---------- Bundles ---------- */
+  let selected = OFFERS[2];
+  const grid = document.getElementById('bundleGrid');
+  grid.innerHTML = OFFERS.map(o => {
+    const s = savings(o);
+    return `<button class="bundle" role="radio" aria-checked="false" data-id="${o.id}">
+      ${o.badge ? `<span class="badge ${o.alt ? 'alt' : ''}">${o.badge}</span>` : ''}
+      <span class="b-name">${o.name}</span>
+      <span class="b-inc">${o.inc.join(' · ')}</span>
+      <span class="b-price"><strong>${fmt(o.price)}</strong>${o.compare ? `<s>${fmt(o.compare)}</s>` : ''}${s ? `<span class="b-save">Save ${fmt(s.usd)}</span>` : ''}</span>
+      <span class="units" aria-hidden="true">${o.units.map(u => `<i class="${u === 'c' ? 'cv' : ''}" style="width:${u === 'p' ? 34 : 18}px"></i>`).join('')}</span>
+    </button>`;
+  }).join('');
+  const sName = document.getElementById('sName'), sPrice = document.getElementById('sPrice'),
+        sCompare = document.getElementById('sCompare'), sSave = document.getElementById('sSave'),
+        sInc = document.getElementById('sInc'), addBtn = document.getElementById('addBtn');
+  let shownPrice = selected.price;
+  function select(o, animate) {
+    selected = o;
+    grid.querySelectorAll('.bundle').forEach(b => b.setAttribute('aria-checked', b.dataset.id === o.id));
+    sName.textContent = o.name;
+    sCompare.textContent = o.compare ? fmt(o.compare) : '';
+    const s = savings(o);
+    sSave.hidden = !s;
+    if (s) sSave.textContent = `You save ${fmt(s.usd)} (${s.pct}%)`;
+    sInc.innerHTML = o.inc.map(i => `<li>${i}</li>`).join('') + '<li>Free US shipping</li>';
+    addBtn.textContent = `Add to cart · ${fmt(o.price)}`;
+    if (animate && hasGsap && !REDUCED) {
+      const obj = { v: shownPrice };
+      gsap.to(obj, { v: o.price, duration: .6, ease: 'power2.out', onUpdate: () => sPrice.textContent = fmt(Math.round(obj.v)) });
+      gsap.fromTo([sName, sSave], { y: 10, opacity: .2 }, { y: 0, opacity: 1, duration: .45, stagger: .06, ease: 'power2.out' });
+    } else sPrice.textContent = fmt(o.price);
+    shownPrice = o.price;
+  }
+  grid.addEventListener('click', e => {
+    const b = e.target.closest('.bundle'); if (!b) return;
+    select(OFFERS.find(o => o.id === b.dataset.id), true);
+  });
+  grid.addEventListener('keydown', e => {
+    if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].includes(e.key)) return;
+    e.preventDefault();
+    const i = OFFERS.indexOf(selected), d = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
+    const n = OFFERS[(i + d + OFFERS.length) % OFFERS.length];
+    select(n, true); grid.querySelector(`[data-id="${n.id}"]`).focus();
+  });
+  select(selected, false);
+
+  /* ---------- Cart ---------- */
+  let cart = {};
+  try { cart = JSON.parse(localStorage.getItem('mp_cart') || '{}') || {}; } catch (e) { cart = {}; }
+  const save = () => { try { localStorage.setItem('mp_cart', JSON.stringify(cart)); } catch (e) {} };
+  const countEl = document.getElementById('cartCount'), cartBtn = document.getElementById('cartBtn');
+  const drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim'), lines = document.getElementById('lines');
+  const totalQty = () => Object.values(cart).reduce((a, b) => a + b, 0);
+  const mini = `<svg viewBox="0 0 ${W} 170">${DEFS}<path d="${slab(0, 1)}" fill="url(#pgFront)"/></svg>`;
+  function renderCart() {
+    const q = totalQty();
+    countEl.textContent = q; countEl.dataset.zero = q === 0;
+    cartBtn.setAttribute('aria-label', `Open cart, ${q} item${q === 1 ? '' : 's'}`);
+    const ids = Object.keys(cart).filter(id => cart[id] > 0);
+    if (!ids.length) {
+      lines.innerHTML = `<li class="empty"><b style="font-family:var(--font-display);font-size:1.6rem;font-weight:400">Your cart is empty</b>Pick a bundle to get started.</li>`;
+    } else {
+      lines.innerHTML = ids.map(id => {
+        const o = OFFERS.find(x => x.id === id);
+        return `<li class="line" data-id="${id}"><div class="thumb">${mini}</div>
+          <div><div class="ln">${o.name}</div><div class="lp">${fmt(o.price)} each</div>
+            <div class="qty"><button aria-label="Decrease quantity" data-a="dec">−</button><span>${cart[id]}</span><button aria-label="Increase quantity" data-a="inc">+</button></div></div>
+          <div style="display:grid;justify-items:end;gap:6px"><strong style="font-variant-numeric:tabular-nums">${fmt(o.price * cart[id])}</strong><button class="remove" data-a="rm">Remove</button></div></li>`;
+      }).join('');
+    }
+    const sub = ids.reduce((a, id) => a + OFFERS.find(x => x.id === id).price * cart[id], 0);
+    document.getElementById('subtotal').textContent = fmt(sub);
+  }
+  function openCart(open) {
+    drawer.classList.toggle('open', open); scrim.classList.toggle('open', open);
+    drawer.setAttribute('aria-hidden', !open);
+    if (open) document.getElementById('closeCart').focus(); else cartBtn.focus();
+  }
+  const toast = document.getElementById('toast'); let tT;
+  function showToast(msg) { toast.textContent = msg; toast.classList.add('show'); clearTimeout(tT); tT = setTimeout(() => toast.classList.remove('show'), 2200); }
+  addBtn.addEventListener('click', () => {
+    cart[selected.id] = (cart[selected.id] || 0) + 1; save(); renderCart();
+    showToast(`${selected.name} added to cart`);
+    if (hasGsap && !REDUCED) {
+      gsap.fromTo(cartBtn, { y: 0 }, { y: -10, duration: .18, yoyo: true, repeat: 3, ease: 'power1.out' });
+      gsap.fromTo(countEl, { scale: 1.6 }, { scale: 1, duration: .5, ease: 'back.out(3)' });
+    }
+  });
+  lines.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-a]'); if (!btn) return;
+    const li = btn.closest('.line'), id = li.dataset.id, a = btn.dataset.a;
+    if (a === 'inc') cart[id]++;
+    if (a === 'dec') cart[id] = Math.max(0, cart[id] - 1);
+    const removing = a === 'rm' || cart[id] === 0;
+    if (removing) {
+      delete cart[id]; save();
+      if (hasGsap && !REDUCED) gsap.to(li, { x: 60, opacity: 0, height: 0, paddingTop: 0, paddingBottom: 0, duration: .4, ease: 'power2.in', onComplete: renderCart });
+      else renderCart();
+      countEl.textContent = totalQty(); countEl.dataset.zero = totalQty() === 0;
+      return;
+    }
+    save(); renderCart();
+  });
+  cartBtn.addEventListener('click', () => openCart(true));
+  document.getElementById('closeCart').addEventListener('click', () => openCart(false));
+  scrim.addEventListener('click', () => openCart(false));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawer.classList.contains('open')) openCart(false); });
+  document.getElementById('checkoutBtn').addEventListener('click', () => showToast('Checkout comes in the full site (Stripe + PayPal)'));
+  renderCart();
+
+  /* ---------- Nav ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 40);
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+  /* ---------- Starfield + Mars ---------- */
+  const cv = document.getElementById('sky'), ctx = cv.getContext('2d');
+  let stars = [], cw = 0, ch = 0, dpr = 1, t0 = performance.now(), shooting = null;
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cw = cv.clientWidth; ch = cv.clientHeight;
+    cv.width = cw * dpr; cv.height = ch * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = Math.round(cw * ch / 2600);
+    stars = Array.from({ length: n }, () => ({ x: Math.random() * cw, y: Math.random() * ch, r: Math.random() * 1.3 + .2, s: Math.random() * .6 + .1, p: Math.random() * 6.28, z: Math.random() }));
+  }
+  function draw(now) {
+    const t = (now - t0) / 1000;
+    ctx.clearRect(0, 0, cw, ch);
+    const neb = ctx.createRadialGradient(cw * .25, ch * .3, 0, cw * .25, ch * .3, cw * .6);
+    neb.addColorStop(0, 'rgba(91,75,138,.32)'); neb.addColorStop(1, 'rgba(91,75,138,0)');
+    ctx.fillStyle = neb; ctx.fillRect(0, 0, cw, ch);
+    // Mars
+    const mx = cw * (cw < 860 ? .82 : .9), my = ch * (cw < 860 ? .2 : .26), mr = Math.min(cw, ch) * (cw < 860 ? .2 : .26);
+    const glow = ctx.createRadialGradient(mx, my, mr * .8, mx, my, mr * 2.1);
+    glow.addColorStop(0, 'rgba(232,116,59,.28)'); glow.addColorStop(1, 'rgba(232,116,59,0)');
+    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(mx, my, mr * 2.1, 0, 6.29); ctx.fill();
+    const body = ctx.createRadialGradient(mx - mr * .4, my - mr * .4, mr * .1, mx, my, mr);
+    body.addColorStop(0, 'rgba(242,160,122,.55)'); body.addColorStop(.6, 'rgba(185,72,28,.38)'); body.addColorStop(1, 'rgba(60,25,40,.3)');
+    ctx.fillStyle = body; ctx.beginPath(); ctx.arc(mx, my, mr, 0, 6.29); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.arc(mx, my, mr, 0, 6.29); ctx.clip();
+    ctx.strokeStyle = 'rgba(90,30,20,.18)'; ctx.lineWidth = mr * .07;
+    for (let k = 0; k < 4; k++) { const yy = my - mr * .5 + k * mr * .33; const off = Math.sin(t * .05 + k) * mr * .1; ctx.beginPath(); ctx.ellipse(mx + off, yy, mr * 1.1, mr * .06, 0, 0, 6.29); ctx.stroke(); }
+    ctx.restore();
+    // stars
+    for (const s of stars) {
+      if (!REDUCED) { s.x -= s.s * .06 * (0.4 + s.z); if (s.x < -2) s.x = cw + 2; }
+      const a = REDUCED ? .7 : .45 + .55 * Math.sin(t * (0.6 + s.z) + s.p) ** 2;
+      ctx.globalAlpha = a; ctx.fillStyle = '#F5F3FF';
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.29); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    if (!REDUCED) {
+      if (!shooting && Math.random() < .003) shooting = { x: Math.random() * cw * .7 + cw * .2, y: Math.random() * ch * .3, life: 0 };
+      if (shooting) {
+        shooting.life += .016; const L = shooting.life, x = shooting.x - L * 520, y = shooting.y + L * 220;
+        const gr = ctx.createLinearGradient(x, y, x + 90, y - 38); gr.addColorStop(0, 'rgba(245,243,255,.9)'); gr.addColorStop(1, 'rgba(245,243,255,0)');
+        ctx.strokeStyle = gr; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 90, y - 38); ctx.stroke();
+        if (L > .9) shooting = null;
+      }
+      requestAnimationFrame(draw);
+    }
+  }
+  resize(); requestAnimationFrame(draw);
+  let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(() => { resize(); if (REDUCED) requestAnimationFrame(draw); }, 150); });
+  // pause the sky when the hero is off-screen
+  let skyVisible = true;
+
+  /* ---------- Headline words ---------- */
+  const hl = document.getElementById('headline');
+  function splitWords(node) {
+    [...node.childNodes].forEach(n => {
+      if (n.nodeType === 3) {
+        const frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(part => {
+          if (!part) return;
+          if (/^\s+$/.test(part)) frag.appendChild(document.createTextNode(part));
+          else { const s = document.createElement('span'); s.className = 'w'; s.textContent = part; frag.appendChild(s); }
+        });
+        n.replaceWith(frag);
+      } else if (n.nodeType === 1) { n.classList.add('w'); }
+    });
+  }
+  splitWords(hl);
+  hl.setAttribute('aria-label', hl.textContent);
+
+  if (!hasGsap || REDUCED) {
+    document.querySelectorAll('.layer-list li').forEach(li => li.classList.add('on'));
+    document.querySelectorAll('#exploded .ly').forEach((g, i) => { g.setAttribute('transform', `translate(0 ${OFF[g.dataset.i]})`); g.querySelector('.lbl').setAttribute('opacity', 1); });
+    goodSpine.circles.forEach(c => c.setAttribute('cy', 128));
+    goodSpine.head.setAttribute('cy', 100);
+    return;
+  }
+
+  /* ---------- Motion ---------- */
+  gsap.from('#headline .w', { y: 40, opacity: 0, rotate: 2, duration: .9, ease: 'power3.out', stagger: .09, delay: .15 });
+  gsap.from('.hero-copy > :not(h1)', { y: 18, opacity: 0, duration: .8, ease: 'power2.out', stagger: .1, delay: .55 });
+  gsap.from('#heroPillow', { y: 40, opacity: 0, duration: 1.2, ease: 'power3.out', delay: .3 });
+  gsap.to('#heroPillow', { y: -16, rotate: -1.2, duration: 3.4, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1.5 });
+  gsap.to('#heroShadow', { scaleX: .86, opacity: .6, duration: 3.4, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1.5 });
+
+  // Generic reveal — elements start mostly visible, so the page reads fine before scroll
+  gsap.utils.toArray('.section-head, .benefit, .spine-card, .bundle, .summary, .table-wrap, .slot, .faq details, .final .wrap > *').forEach(el => {
+    gsap.from(el, { y: 26, opacity: .25, duration: .8, ease: 'power2.out', scrollTrigger: { trigger: el, start: 'top 90%', once: true } });
+  });
+
+  // Exploded pillow — pinned scroll story
+  const lis = [...document.querySelectorAll('#layerList li')];
+  const groups = [...document.querySelectorAll('#exploded .ly')].sort((a, b) => a.dataset.i - b.dataset.i);
+  const setOn = n => lis.forEach((li, i) => li.classList.toggle('on', i <= n));
+  setOn(-1); lis[0].classList.add('on');
+  const mm = gsap.matchMedia();
+  mm.add({ wide: '(min-width: 861px)', narrow: '(max-width: 860px)' }, ctx2 => {
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: '#insideStage', start: ctx2.conditions.wide ? 'center center' : 'top 70px',
+        end: ctx2.conditions.wide ? '+=1400' : '+=900', scrub: .8, pin: ctx2.conditions.wide ? '#inside' : false,
+        onUpdate: self => setOn(Math.min(3, Math.floor(self.progress * 4.4) - 0)),
+      }
+    });
+    groups.forEach((g, i) => {
+      tl.to(g, { y: OFF[i], duration: 1, ease: 'power2.inOut' }, i * .35)
+        .to(g.querySelector('.lbl'), { opacity: 1, duration: .4 }, i * .35 + .6);
+    });
+    tl.to('#exploded svg', { rotate: -2, duration: 2.2, ease: 'none' }, 0);
+    return () => { gsap.set(groups, { clearProps: 'all' }); };
+  });
+
+  // Spine straightening
+  const st = { trigger: '#spineGood', start: 'top 75%', once: true };
+  gsap.to(goodSpine.circles, { attr: { cy: 128 }, duration: 1.1, ease: 'elastic.out(1, .6)', stagger: .06, delay: .2, scrollTrigger: st });
+  gsap.from('#spineGood .neck, #spineGood .head', { y: -12, duration: 1, ease: 'power3.out', scrollTrigger: { ...st } });
+
+  // Pause starfield cost isn't needed in reduced mode; in motion mode, RAF is throttled by the browser when hidden
+})();
+</script>
