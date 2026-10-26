@@ -42,10 +42,13 @@ domains/הדומיין-שלך/
 3. העתק את הטקסט שמתקבל והדבק אותו ב־`config.php`, בשדה `admin` → `password_hash`.
 4. היכנס ל־`/admin` עם הסיסמה שבחרת.
 
-## 7. להגדיר שליחת מיילים
-1. ב־**Emails** צור תיבת דואר כמו `orders@הדומיין-שלך`.
-2. ב־`config.php` → `mail`: מלא את `from_email` ואת `admin_email` (הכתובת שאליה יגיעו התראות על הזמנות).
-3. ב־`smtp`: שנה `enabled` ל־`true`, ומלא את `user` ואת `pass` של התיבה שיצרת. השרת `smtp.hostinger.com` ופורט 465 כבר מוגדרים.
+## 7. להגדיר שליחת מיילים (גוגל וורקספייס)
+הכתובות כבר ממולאות ב־`config.php`: האתר מציג ללקוחות את `support@marspillows.com`, שולח מ־`orders@marspillows.com`, והתראות מגיעות ל־`dan@marspillows.com`.
+1. במסוף הניהול של גוגל (admin.google.com) → **Users** → המשתמש שלך → **Add alternate emails**: הוסף `support`, `orders`, `hello`.
+2. בחשבון שלך הפעל אימות דו־שלבי, ואז ב־myaccount.google.com → **Security** → **App passwords** צור סיסמת אפליקציה (16 אותיות).
+3. ב־`config.php` → `mail` → `smtp` → `pass` הדבק את סיסמת האפליקציה.
+4. ב־Gmail → הגדרות → **Accounts** → **Send mail as**: הוסף את `orders@marspillows.com`, כדי שהמיילים מהאתר יופיעו מהכתובת הזו.
+5. בהוסטינגר, ברשומות הדומיין: הוסף את רשומות MX של גוגל, SPF (`v=spf1 include:_spf.google.com ~all`), DKIM (נוצר במסוף הניהול של גוגל → Apps → Gmail → Authenticate email) ו־DMARC. בלי אלה מיילים מהאתר עלולים להגיע לספאם.
 
 ## 8. לחבר את Stripe (תשלום בכרטיס) במצב בדיקה
 1. פתח חשבון ב־stripe.com. ההרשמה דורשת חברה אמריקאית או חשבון בנק נתמך.

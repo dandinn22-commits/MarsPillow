@@ -16,8 +16,8 @@ return [
 
     'site' => [
         'name'             => 'Mars Pillow',
-        'base_url'         => 'https://www.example.com',   // [TODO] your domain, no trailing slash
-        'support_email'    => 'support@example.com',        // [TODO]
+        'base_url'         => 'https://marspillows.com',   // your domain, no trailing slash
+        'support_email'    => 'support@marspillows.com',    // shown to customers on the site
         'business_name'    => 'Mars Pillow LLC',            // [TODO] legal business name
         'business_address' => '[TODO] Street, City, State ZIP, USA',
         'trial_nights'     => 60,
@@ -104,18 +104,19 @@ return [
     ],
 
     'mail' => [
-        'from_email'  => 'orders@example.com',   // [TODO] an address on your domain
+        'from_email'  => 'orders@marspillows.com',   // alias of the Google Workspace user
         'from_name'   => 'Mars Pillow',
-        'admin_email' => 'you@example.com',      // [TODO] where new-order and contact emails go
-        // SMTP (recommended). Hostinger: hPanel > Emails > your address > Configuration.
+        'admin_email' => 'dan@marspillows.com',      // where new-order and contact emails go
+        // SMTP via Google Workspace. 'user' is the real Workspace user (not the alias).
+        // 'pass' is an App Password: myaccount.google.com > Security > 2-Step Verification > App passwords.
         // If 'enabled' is false, PHP mail() is used instead.
         'smtp' => [
-            'enabled'  => false,
-            'host'     => 'smtp.hostinger.com',
-            'port'     => 465,
-            'secure'   => 'ssl', // 'ssl' for 465, 'tls' for 587
-            'user'     => 'orders@example.com',
-            'pass'     => '[TODO]',
+            'enabled'  => true,
+            'host'     => 'smtp.gmail.com',
+            'port'     => 587,
+            'secure'   => 'tls', // 'ssl' for 465, 'tls' for 587
+            'user'     => 'dan@marspillows.com',
+            'pass'     => '[TODO] 16-letter app password',
         ],
     ],
 
