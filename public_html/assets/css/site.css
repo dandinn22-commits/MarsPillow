@@ -40,7 +40,7 @@ main, footer { position: relative; z-index: 1; }
 
 .band { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .wrap { max-width: var(--wrap); margin-inline: auto; }
-section.band { padding-block: clamp(72px, 10vw, 128px); position: relative; }
+section.band { padding-block: clamp(56px, 6.5vw, 88px); position: relative; }
 
 h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.04; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
 h1 { font-size: clamp(3.1rem, 8.6vw, 7rem); }
@@ -51,7 +51,7 @@ p { margin: 0; }
 .lede { color: var(--mist); font-size: 1.15rem; max-width: 34em; }
 .eyebrow { font-family: var(--font-mono); font-size: .76rem; letter-spacing: .16em; text-transform: uppercase; color: var(--mars-soft); display: inline-flex; gap: 10px; align-items: center; }
 .eyebrow::before { content: ""; width: 22px; height: 1px; background: currentColor; }
-.section-head { display: grid; gap: 18px; margin-bottom: 56px; max-width: 760px; }
+.section-head { display: grid; gap: 16px; margin-bottom: 40px; max-width: 760px; }
 .todo { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .06em; border: 1px dashed rgba(242,160,122,.6); color: var(--mars-soft); padding: 1px 6px; border-radius: 6px; white-space: nowrap; vertical-align: middle; }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 15px 26px; border-radius: 999px; font-weight: 600; text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: box-shadow .3s, background .3s, border-color .3s; font-size: 1rem; will-change: transform; }
@@ -134,7 +134,7 @@ p { margin: 0; }
 
 /* inside */
 .inside { background: radial-gradient(120% 80% at 70% 40%, rgba(91,75,138,.35), transparent 60%); }
-.inside-stage { display: grid; grid-template-columns: 1fr 1.3fr; gap: 40px; align-items: center; min-height: 82vh; }
+.inside-stage { display: grid; grid-template-columns: 1fr 1.3fr; gap: 40px; align-items: center; min-height: 72vh; }
 .layer-list { list-style: none; margin: 36px 0 0; padding: 0; display: grid; gap: 4px; }
 .layer-list li { display: grid; grid-template-columns: 54px 1fr; gap: 4px 12px; padding: 16px 0; border-top: 1px solid var(--line); opacity: .38; transition: opacity .4s; }
 .layer-list li.on { opacity: 1; }
