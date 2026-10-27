@@ -2,17 +2,18 @@
 <div class="band page-pad">
   <div class="wrap narrow prose">
     <span class="eyebrow">Our story</span>
-    <h1 class="page-title">Why we designed a better neck pillow</h1>
-    <p class="lede">Mars Pillow started with one question: why do so many pillows leave a gap under the neck? We set out to build a neck pillow that fills that gap, for back sleepers and side sleepers alike. <?= todo('[TODO add your own founder story: who you are and why you started]') ?></p>
+    <h1 class="page-title">Why we designed an adjustable pillow</h1>
+    <p class="lede">Mars Pillow started with one question: why do pillows come in one height when people come in every shape? We set out to build a pillow you can adjust to your own neck and shoulders, whether you sleep on your side, back or stomach. <?= todo('[TODO add your own founder story: who you are and why you started]') ?></p>
 
-    <h2>The problem with flat pillows</h2>
-    <p>Most pillows are the same height from edge to edge. When you lie down, your head sinks in and your neck is left without support. Over a night, that can mean waking up stiff.</p>
+    <h2>The problem with one-size pillows</h2>
+    <p>A side sleeper with broad shoulders needs a lot more height than a stomach sleeper. A one-size pillow is too low for one of them and too high for the other, and the neck bends to make up the difference. Over a night, that can mean waking up stiff.</p>
 
-    <h2>How we designed the Mars neck pillow</h2>
-    <p>We started with the shape. The Mars Pillow has a raised neck roll on one edge, a lower roll on the other, and a gentle dip for your head. Then we chose slow-recovery memory foam, so the pillow softens where your head rests and stays firm where your neck needs it. See <a href="/#inside">what's inside each layer</a>.</p>
+    <h2>How we designed an adjustable Mars Pillow</h2>
+    <p>We started with height. The Mars Pillow is built from three memory foam layers you can remove, so you can set it to four heights. One side is soft and one is firm, so you also choose how it feels. And we gave it a square 90° edge that sits close to your shoulder instead of rolling away. See <a href="/#inside">what's inside each layer</a>.</p>
     <ul>
-      <li>Two contour heights, one for back sleepers and one for side sleepers.</li>
-      <li>A breathable cover you can zip off and wash.</li>
+      <li>Four heights from three removable layers, for side, back and stomach sleepers.</li>
+      <li>A soft side and a firm side. Flip the pillow to switch.</li>
+      <li>A breathable cover made with viscose from bamboo.</li>
       <li>A <?= $nights ?>-night trial, because a new pillow takes a few nights to get used to. <a href="/returns">How the trial works</a>.</li>
     </ul>
 

@@ -26,6 +26,7 @@
 ```
 private/            ← מחוץ ל-public_html. כאן הסיסמאות והקוד.
   config.example.php  תבנית הגדרות. מעתיקים ל-config.php וממלאים.
+  catalog.php         חבילות, מחירים, פרטי הכרית וטבלת ההשוואה
   bootstrap.php       הפעלה, אבטחה, שגיאות
   routes.php          כל הכתובות של האתר
   admin.php           דף הניהול
@@ -51,15 +52,15 @@ brand/              ← קבצי הלוגו
 ## איפה משנים דברים
 | מה | איפה |
 |---|---|
-| מחירים, חבילות, קישורי אמזון | `private/config.php` → `offers` |
+| מחירים, חבילות, קישורי אמזון | `private/catalog.php` → `offers` |
 | ימי ניסיון, אחריות, זמן משלוח, אימייל, כתובת | `private/config.php` → `site` |
-| שכבות הכרית, מידות, חומרים, כביסה | `private/config.php` → `product` |
+| שכבות הכרית, גבהים, מידות, חומרים, כביסה | `private/catalog.php` → `product` |
 | מעבר מבדיקה לאמיתי | `private/config.php` → `'mode' => 'live'` |
 | שאלות נפוצות | `private/src/seo.php` → `faqs()` |
 | כותרות ותיאורים לגוגל | `private/src/seo.php` → `page_meta()` |
 | קודי הנחה | `private/config.php` → `coupons`, `popup_code` |
 | מתי נשלחים מיילים אוטומטיים | `private/config.php` → `automations` |
-| טבלת ההשוואה לטמפור | `private/config.php` → `comparison` |
+| טבלת ההשוואה לטמפור | `private/catalog.php` → `comparison` |
 | טקסטים בעמודים | `private/templates/pages/` |
 
 כל מקום שכתוב בו `[TODO]` הוא פרט שחסר. במצב בדיקה הוא מופיע באתר כתווית כתומה, ובמצב אמיתי הוא מוסתר.

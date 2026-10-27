@@ -3,7 +3,7 @@
 $nights = (int)cfg('site.trial_nights'); $years = (int)cfg('site.warranty_years');
 $p = cfg('product');
 $photos = [];
-foreach (['product-1.jpg' => 'Mars Pillow from the side, showing the two contour heights', 'product-2.jpg' => 'Mars Pillow from above on a made bed', 'product-3.jpg' => 'Close-up of the knit cover and zipper', 'product-4.jpg' => 'Person sleeping on their side on the Mars Pillow'] as $file => $alt) {
+foreach (['product-1.jpg' => 'Mars Pillow from the side, showing its three layers', 'product-2.jpg' => 'Mars Pillow from above on a made bed', 'product-3.jpg' => 'Close-up of the bamboo-viscose cover', 'product-4.jpg' => 'Person sleeping on their side on the Mars Pillow'] as $file => $alt) {
     $photos[] = ['src' => is_file(MP_PUBLIC . '/assets/img/' . $file) ? '/assets/img/' . $file : null, 'alt' => $alt];
 }
 $productFaqs = array_values(array_filter(faqs(), fn($f) => in_array($f['cat'], ['Using your orthopedic pillow', 'Care'], true)));
@@ -38,17 +38,17 @@ $productFaqs = array_values(array_filter(faqs(), fn($f) => in_array($f['cat'], [
       </div>
 
       <div class="pdp-info">
-        <span class="eyebrow">For back and side sleepers</span>
-        <h1>Mars Pillow: contour memory foam pillow</h1>
-        <p class="lede">A contour memory foam pillow with two heights, a raised neck roll and a washable knit cover. It is designed to support your neck and help keep your spine aligned through the night.</p>
-        <?php $rs = reviews_stats(); if ($rs['count']): ?><a class="rating-line" href="#reviews"><?= stars($rs['avg']) ?> <b><?= e(number_format($rs['avg'], 1)) ?></b> · <?= (int)$rs['count'] ?> verified reviews</a><?php endif; ?>
+        <span class="eyebrow">For side, back and stomach sleepers</span>
+        <h1>Mars Pillow: adjustable memory foam pillow</h1>
+        <p class="lede">An adjustable memory foam pillow with three removable layers, four heights, and a soft side and a firm side. Set it to your build and sleeping position to support your neck and help keep your spine aligned through the night.</p>
+        <?php $rs = reviews_stats(); if ($rs['count']): ?><a class="rating-line" href="#reviews"><?= stars($rs['avg']) ?> <b><?= e(number_format($rs['avg'], 1)) ?></b> · <?= (int)$rs['count'] ?> verified review<?= $rs['count'] === 1 ? '' : 's' ?></a><?php endif; ?>
         <ul class="pdp-points">
           <li><?= $nights ?>-night sleep trial</li>
           <li><?= $years ?>-year warranty on the pillow</li>
           <li>Free US shipping in <?= todo((string)cfg('site.shipping_days')) ?> business days</li>
         </ul>
         <?= render('partials/bundle-picker', ['selected' => $selected, 'context' => 'product']) ?>
-        <p class="fine">Not sure which edge is for you? <a href="/find-your-fit">Take the 30-second pillow finder</a>.</p>
+        <p class="fine">Not sure which height is for you? <a href="/find-your-fit">Take the 30-second pillow finder</a>.</p>
       </div>
     </div>
 
@@ -65,8 +65,14 @@ $productFaqs = array_values(array_filter(faqs(), fn($f) => in_array($f['cat'], [
         <ol class="layer-list on-all">
           <?php foreach ($p['layers'] as $i => $l): ?><li class="on"><span class="num">L/0<?= $i + 1 ?></span><b><?= e($l['name']) ?></b><span class="d"><?= todo($l['text']) ?></span></li><?php endforeach; ?>
         </ol>
-        <h3>Which edge to use</h3>
-        <p>Back sleepers usually prefer the lower edge under the neck. Side sleepers usually prefer the higher edge, which fills the space between the shoulder and the head.</p>
+        <h3>Pick your height</h3>
+        <div class="table-wrap"><table class="heights">
+          <caption class="sr-only">Heights you can build with the Mars Pillow layers</caption>
+          <thead><tr><th scope="col">Height</th><th scope="col">Layers</th><th scope="col">Usually best for</th></tr></thead>
+          <tbody><?php foreach ($p['heights'] as $h): ?><tr><th scope="row"><?= e($h['in']) ?> in <small>(<?= (int)$h['cm'] ?> cm)</small></th><td><?= e($h['how']) ?></td><td><?= e($h['for']) ?></td></tr><?php endforeach; ?></tbody>
+        </table></div>
+        <h3>Soft or firm</h3>
+        <p>Sleep with the soft layer on top for a gentle, sinking feel. Flip the pillow so the firm layer is on top for more support. Side sleepers often start with the firm side.</p>
       </div>
       <div class="tabpanel" role="tabpanel" id="panel-materials" aria-labelledby="tab-materials" tabindex="0">
         <h3>Materials</h3><p><?= todo($p['materials']) ?></p>
@@ -77,8 +83,10 @@ $productFaqs = array_values(array_filter(faqs(), fn($f) => in_array($f['cat'], [
         <dl class="specs">
           <div><dt>Dimensions</dt><dd><?= todo($p['size']) ?></dd></div>
           <div><dt>Weight</dt><dd><?= todo($p['weight']) ?></dd></div>
+          <div><dt>Heights</dt><dd><?= e(implode(' / ', array_map(fn($h) => $h['in'] . ' in', $p['heights']))) ?></dd></div>
+          <div><dt>Layers</dt><dd><?= e(implode(' + ', array_map(fn($l) => $l['in'] . ' in', $p['layers']))) ?>, all removable</dd></div>
           <div><dt>Fits</dt><dd>Standard pillowcases <?= todo('[TODO confirm]') ?></dd></div>
-          <div><dt>Best for</dt><dd>Back and side sleepers</dd></div>
+          <div><dt>Best for</dt><dd>Side, back and stomach sleepers</dd></div>
         </dl>
       </div>
       <div class="tabpanel faq" role="tabpanel" id="panel-faq" aria-labelledby="tab-faq" tabindex="0">
@@ -93,13 +101,13 @@ $productFaqs = array_values(array_filter(faqs(), fn($f) => in_array($f['cat'], [
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">Why it works</span>
-      <h2 id="why-pdp-h">Why a contour memory foam pillow feels different</h2>
-      <p class="lede">A regular pillow is the same height everywhere, so your neck can sag or bend. The Mars Pillow raises the edge under your neck and lowers the area under your head. Memory foam slowly softens under pressure and then returns to shape, so the support stays where you need it.</p>
+      <h2 id="why-pdp-h">Why an adjustable memory foam pillow feels different</h2>
+      <p class="lede">A regular pillow comes in one height, so it is too low for some people and too high for others, and your neck bends to make up the difference. The Mars Pillow lets you build the height that fits your shoulders and the way you sleep. Memory foam slowly softens under pressure and then returns to shape, so the support stays where you need it.</p>
     </div>
     <div class="benefits">
-      <div class="benefit"><h3>Two heights</h3><p>Turn the pillow to use the higher or the lower edge.</p></div>
-      <div class="benefit"><h3>Slow-recovery foam</h3><p>Softens under your head and stays firm under your neck.</p></div>
-      <div class="benefit"><h3>Zip-off cover</h3><p>Machine washable, so the pillow stays fresh.</p></div>
+      <div class="benefit"><h3>4 heights</h3><p>Add or remove a layer to change the height.</p></div>
+      <div class="benefit"><h3>Soft side, firm side</h3><p>Flip the pillow to change how it feels.</p></div>
+      <div class="benefit"><h3>Square 90° edge</h3><p>Sits close to your shoulder and fills the gap under your neck.</p></div>
       <div class="benefit"><h3><?= $nights ?> nights to decide</h3><p>Not right for you? <a href="/returns">Send it back</a>.</p></div>
     </div>
   </div>

@@ -10,6 +10,8 @@ if (!is_file($configFile)) {
     exit('Setup needed: copy private/config.example.php to private/config.php and fill in your settings.');
 }
 $GLOBALS['MP_CONFIG'] = require $configFile;
+// product catalog (bundles, pillow details, comparison) always comes from catalog.php
+$GLOBALS['MP_CONFIG'] = array_replace($GLOBALS['MP_CONFIG'], require __DIR__ . '/catalog.php');
 
 foreach (['logs', 'ratelimit'] as $d) {
     if (!is_dir(MP_STORAGE . "/$d")) @mkdir(MP_STORAGE . "/$d", 0750, true);

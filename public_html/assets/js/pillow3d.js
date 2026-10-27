@@ -6,58 +6,76 @@
     try { const c = document.createElement('canvas'); return !!(c.getContext('webgl') || c.getContext('experimental-webgl')); } catch (e) { return false; }
   })();
 
-  // Pillow cross-section: raised neck roll (t≈0.2), head dip, lower rear roll (t≈0.8)
-  const g = (x, m, s) => Math.exp(-((x - m) ** 2) / (2 * s * s));
-  const h = t => (0.5 + 0.5 * g(t, 0.2, 0.13) + 0.28 * g(t, 0.8, 0.15)) * Math.pow(Math.max(0, Math.sin(Math.PI * t)), 0.32);
+  // The Mars Pillow is a rectangular block, 60 x 40 x 14 cm, made of three removable layers:
+  // firm 6 cm (bottom), fine-tune 2 cm, soft 6 cm (top). f = height fraction from the bottom.
+  const LAYER_F = { firm: [0, 6 / 14], fine: [6 / 14, 8 / 14], soft: [8 / 14, 1] };
+  // squared-off profile with softly rounded edges (superellipse): ~1 in the middle, 0 at the edge
+  const se = (t, p) => Math.pow(Math.max(0, 1 - Math.pow(Math.abs(2 * t - 1), p)), 1 / p);
+  const h = t => se(t, 12);
 
-  // ---- 2D SVG versions (fallback without WebGL, cart thumbnails) ----
-  const W = 420, B = 150, HMAX = 92, X0 = 20, X1 = 400, N2 = 70;
-  const pt = (t, f) => [X0 + t * (X1 - X0), B - f * HMAX * h(t)];
+  // ---- 2D SVG versions (fallback without WebGL, cart animation) ----
+  const W = 420, B = 150, HMAX = 88, X0 = 20, X1 = 400;
+  const pt = (t, f) => [X0 + t * (X1 - X0), B - f * HMAX];
+  const rr = (x, y, w, hh, r) => `M${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + hh - r}Q${x + w},${y + hh} ${x + w - r},${y + hh}H${x + r}Q${x},${y + hh} ${x},${y + hh - r}V${y + r}Q${x},${y} ${x + r},${y}Z`;
   function slab(f1, f2) {
-    let d = '';
-    for (let i = 0; i <= N2; i++) { const [x, y] = pt(i / N2, f2); d += (i ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); }
-    for (let i = N2; i >= 0; i--) { const [x, y] = pt(i / N2, f1); d += 'L' + x.toFixed(1) + ',' + y.toFixed(1); }
-    return d + 'Z';
+    const y1 = B - f2 * HMAX, hh = (f2 - f1) * HMAX;
+    return rr(X0, y1, X1 - X0, hh, Math.min(12, hh / 2));
   }
   const DEFS = `<defs>
     <linearGradient id="pgFront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5F3FF"/><stop offset=".55" stop-color="#D9D2F2"/><stop offset="1" stop-color="#8F84BF"/></linearGradient>
     <linearGradient id="pgBack" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B7AEE0"/><stop offset="1" stop-color="#5B4B8A"/></linearGradient>
-    <linearGradient id="pgCool" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7FC8E8"/><stop offset="1" stop-color="#A9B8F5"/></linearGradient>
-    <linearGradient id="pgFoam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EDE6FF"/><stop offset="1" stop-color="#B8ABE3"/></linearGradient>
+    <linearGradient id="pgCool" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F2A07A"/><stop offset="1" stop-color="#E8743B"/></linearGradient>
+    <linearGradient id="pgFoam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5F1FF"/><stop offset="1" stop-color="#C9BEEA"/></linearGradient>
     <linearGradient id="pgBase" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C6CB4"/><stop offset="1" stop-color="#3E3366"/></linearGradient>
   </defs>`;
-  const svgPillow = (label = 'Illustration of the contoured Mars Pillow') =>
-    `<svg viewBox="0 0 ${W} 190" role="img" aria-label="${label}">${DEFS}<g transform="translate(16,-18)"><path d="${slab(0, 1)}" fill="url(#pgBack)"/></g><path d="${slab(0, 1)}" fill="url(#pgFront)"/></svg>`;
+  // a block seen slightly from above: top face, right side, and the three layers on the front
+  const svgPillow = (label = 'Illustration of the Mars Pillow, a rectangular pillow with three layers') => {
+    const dx = 30, dy = -26, top = B - HMAX, f = LAYER_F;
+    const band = (k, fill) => `<path d="${slab(f[k][0], f[k][1])}" fill="${fill}"/>`;
+    return `<svg viewBox="0 0 ${W + dx + 6} 190" role="img" aria-label="${label}">${DEFS}<g transform="translate(0,${-dy / 2 + 4})">
+      <path d="M${X0 + 8},${top} L${X0 + 8 + dx},${top + dy} H${X1 + dx - 8} L${X1 - 8},${top}Z" fill="#EEE9FF"/>
+      <path d="M${X1},${top + 8} L${X1 + dx},${top + dy + 8} V${B + dy - 8} L${X1},${B - 8}Z" fill="url(#pgBack)"/>
+      ${band('firm', 'url(#pgBase)')}${band('fine', 'url(#pgCool)')}${band('soft', 'url(#pgFoam)')}
+      <path d="${slab(0, 1)}" fill="none" stroke="rgba(245,243,255,.5)"/></g></svg>`;
+  };
 
-  if (!webgl) { window.MP3D = { webgl: false, h, W, slab, pt, DEFS, svgPillow }; return; }
+  if (!webgl) { window.MP3D = { webgl: false, h, W, slab, pt, DEFS, svgPillow, LAYER_F }; return; }
 
   // ---- 3D ----
-  function pillowGeometry({ f1 = 0, f2 = 1, N = 96, M = 60, Wd = 4, D = 6.2, H = 1.25, inflate = 0 } = {}) {
-    const pos = [], uv = [], idx = [];
-    const surf = (f, top) => {
+  // Pillow block between height fractions f1..f2 (0 = bottom, 1 = top). x = short side, z = long side.
+  const DIM = { Wd: 4.13, D: 6.2, H: 1.45 };
+  function pillowGeometry({ f1 = 0, f2 = 1, N = 96, M = 60, Wd = DIM.Wd, D = DIM.D, H = DIM.H, inflate = 0, p = 7 } = {}) {
+    const pos = [], uv = [], idx = [], w = [];
+    const y0 = f1 * H, y1 = f2 * H, yc = (y0 + y1) / 2, ht = (y1 - y0) / 2 + inflate * .9;
+    const cs = u => .5 - .5 * Math.cos(Math.PI * u); // more vertices near the edges, for crisp corners
+    const surf = sign => {
       const base = pos.length / 3;
       for (let j = 0; j <= M; j++) {
-        const v = j / M, tp = Math.pow(Math.max(0, Math.sin(Math.PI * v)), 0.22);
+        const v = cs(j / M), pz = se(v, p);
         for (let i = 0; i <= N; i++) {
-          const t = i / N;
-          pos.push((t - .5) * Wd * (0.9 + 0.1 * tp) * (1 + inflate), f * H * h(t) * tp * (1 + inflate) - (f === 0 ? inflate * .05 : 0), (v - .5) * D * (1 + inflate * .5));
+          const t = cs(i / N), px = se(t, p), prof = px * pz;
+          const X = 2 * t - 1, Z = 2 * v - 1, crown = sign > 0 ? (1 - X * X) * (1 - Z * Z) * .05 * (y1 - y0) : 0;
+          pos.push(X * Wd / 2 * (1 + inflate), yc + sign * (ht * prof) + crown * prof, Z * D / 2 * (1 + inflate * .6));
           uv.push(t * 6, v * 9);
+          if (sign > 0) w.push(prof);
         }
       }
       for (let j = 0; j < M; j++) for (let i = 0; i < N; i++) {
         const a = base + j * (N + 1) + i, b = a + (N + 1), c = a + 1, d = b + 1;
-        if (top) idx.push(a, b, c, c, b, d); else idx.push(a, c, b, c, d, b);
+        if (sign > 0) idx.push(a, b, c, c, b, d); else idx.push(a, c, b, c, d, b);
       }
     };
-    surf(f2, true); surf(f1, false);
+    surf(1); surf(-1);
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     geo.setIndex(idx);
     geo.computeVertexNormals();
-    geo.userData = { topCount: (N + 1) * (M + 1), orig: Float32Array.from(pos), H };
+    geo.userData = { topCount: (N + 1) * (M + 1), orig: Float32Array.from(pos), H, y0, w: Float32Array.from(w) };
     return geo;
   }
+  // a point on the top surface of a block (for decorations like foam pores)
+  const topY = (t, v, f1, f2, H = DIM.H, p = 7) => { const prof = se(t, p) * se(v, p); return (f1 + f2) / 2 * H + (f2 - f1) / 2 * H * prof; };
   function canvasTex(w, hgt, draw) { const c = document.createElement('canvas'); c.width = w; c.height = hgt; draw(c.getContext('2d'), w, hgt); return new THREE.CanvasTexture(c); }
   const knitTex = () => {
     const tx = canvasTex(128, 128, (c, w, hh) => {
@@ -144,12 +162,12 @@
           else { im.s *= Math.exp(-dt / 1.4); if (im.s < .004) imprints.splice(k, 1); }
         }
         while (imprints.length > 40) imprints.shift();
-        const { orig, topCount, H } = geo.userData, P = geo.attributes.position.array, sig2 = 2 * .42 * .42;
+        const { orig, topCount, y0, w } = geo.userData, P = geo.attributes.position.array, sig2 = 2 * .42 * .42;
         for (let v = 0; v < topCount; v++) {
           const o = v * 3, ox = orig[o], oy = orig[o + 1], oz = orig[o + 2];
           let d = 0;
           for (const im of imprints) { const dx = ox - im.x, dz = oz - im.z, q = dx * dx + dz * dz; if (q < 1.6) d += im.s * Math.exp(-q / sig2); }
-          P[o + 1] = oy - Math.min(d, oy * .78) * Math.min(1, (oy / H) * 20);
+          P[o + 1] = oy - Math.min(d, (oy - y0) * .6) * Math.min(1, w[v] * 3);
         }
         geo.attributes.position.needsUpdate = true; geo.computeVertexNormals();
         dirty = imprints.length > 0;
@@ -157,5 +175,5 @@
     };
   }
 
-  window.MP3D = { webgl: true, h, W, slab, pt, DEFS, svgPillow, pillowGeometry, canvasTex, knitTex, glowTex, marsTex, stdLights, makeRenderer, pillowMaterial, worldAt, foam };
+  window.MP3D = { webgl: true, h, W, slab, pt, DEFS, svgPillow, LAYER_F, DIM, topY, pillowGeometry, canvasTex, knitTex, glowTex, marsTex, stdLights, makeRenderer, pillowMaterial, worldAt, foam };
 })();

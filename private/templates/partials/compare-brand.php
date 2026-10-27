@@ -4,7 +4,7 @@
     <div class="section-head">
       <span class="eyebrow">Compare</span>
       <h2 id="brand-h">Mars Pillow vs. <?= e($c['brand']) ?></h2>
-      <p class="lede">The same idea, a contoured memory foam pillow for back and side sleepers. Here is how the details compare.</p>
+      <p class="lede">Both are memory foam pillows made to support your neck. Here is how the details compare.</p>
     </div>
     <div class="table-wrap">
       <table>

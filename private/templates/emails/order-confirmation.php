@@ -5,6 +5,6 @@ ob_start(); ?>
 <p style="margin:0 0 4px;line-height:1.6">Order <b><?= e($order['order_number']) ?></b></p>
 <p style="margin:0;line-height:1.6">We're getting it ready. You'll get another email with a tracking number when it ships. Delivery usually takes <?= e(trim(preg_replace('/\[TODO\]?\s*/', '', (string)cfg('site.shipping_days')), '] ')) ?> business days.</p>
 <?= render('emails/_items', ['order' => $order]) ?>
-<p style="margin:0 0 12px;line-height:1.6"><b>Your <?= (int)cfg('site.trial_nights') ?>-night trial</b> starts the night your pillow arrives. Give your neck a few nights to get used to the new shape. Back sleepers usually like the lower edge, side sleepers the higher one.</p>
+<p style="margin:0 0 12px;line-height:1.6"><b>Your <?= (int)cfg('site.trial_nights') ?>-night trial</b> starts the night your pillow arrives. Start with the setup from our <a href="<?= e(url('/find-your-fit')) ?>">pillow finder</a>, and give each setting at least three nights before you change it. Side sleepers usually need all three layers, back sleepers two, and stomach sleepers one.</p>
 <p style="margin:0"><a href="<?= e(url('/faq')) ?>" style="display:inline-block;background:#E8743B;color:#0B132B;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:99px">Read tips for your first nights</a></p>
 <?php $body = ob_get_clean(); echo render('emails/_wrap', ['body' => $body, 'preheader' => 'Order ' . $order['order_number'] . ' is confirmed.']);

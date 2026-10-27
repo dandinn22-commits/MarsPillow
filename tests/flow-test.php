@@ -141,9 +141,11 @@ $rid = (int)$pdo->query("SELECT id FROM reviews LIMIT 1")->fetchColumn();
 ok(str_contains($b, 'Finally no stiff neck') && str_contains($b, '"aggregateRating"'), 'approved review shows on product page + rating in Google data');
 // quiz + landing page + feed
 [, , $b] = req('GET', "$base/find-your-fit?pos=side&build=broad&who=two");
-ok(str_contains($b, 'higher edge') && str_contains($b, 'Mars Twin Pack'), 'quiz: side + partner → higher edge, Twin Pack');
+ok(str_contains($b, '5.5 in') && str_contains($b, 'firm side up') && str_contains($b, 'Mars Twin Pack'), 'quiz: side + broad + partner → 5.5 in, firm side, Twin Pack');
 [, , $b] = req('GET', "$base/find-your-fit?pos=back&build=average&who=me");
-ok(str_contains($b, 'lower edge') && str_contains($b, 'Mars Sleep Pack'), 'quiz: back + solo → lower edge, Sleep Pack');
+ok(str_contains($b, '3.1 in') && str_contains($b, 'soft side up') && str_contains($b, 'Mars Sleep Pack'), 'quiz: back + solo → 3.1 in, soft side, Sleep Pack');
+[, , $b] = req('GET', "$base/find-your-fit?pos=stomach&build=broad&who=me");
+ok(str_contains($b, '2.4 in'), 'quiz: stomach → 2.4 in');
 [, , $b] = req('GET', "$base/lp/neck-pillow");
 ok(str_contains($b, 'noindex') && !str_contains($b, '["three"') && str_contains($b, 'TEMPUR-Neck'), 'landing page: noindex, no 3D, brand comparison');
 [, , $b] = req('GET', "$base/feed.xml");

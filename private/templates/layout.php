@@ -112,7 +112,7 @@ window.MP = <?= json_encode([
     <div class="foot-grid">
       <div class="foot-brand">
         <a class="logo" href="/" aria-label="Mars Pillow home"><svg aria-hidden="true"><use href="#planet"/></svg><span class="lw"><em>mars</em><b>pillow.</b></span></a>
-        <p>A contoured memory foam pillow for back and side sleepers. <?= (int)cfg('site.trial_nights') ?>-night trial, <?= (int)cfg('site.warranty_years') ?>-year warranty, free US shipping.</p>
+        <p>An adjustable memory foam pillow for side, back and stomach sleepers. <?= (int)cfg('site.trial_nights') ?>-night trial, <?= (int)cfg('site.warranty_years') ?>-year warranty, free US shipping.</p>
       </div>
       <div>
         <h2 class="foot-h">Shop</h2>
@@ -164,7 +164,7 @@ window.MP = <?= json_encode([
     <button class="icon-btn popup-close" type="button" data-popup-close aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     <svg class="big-planet" aria-hidden="true" width="64" height="64"><use href="#planet"/></svg>
     <h2 id="popupTitle">Get <?= e(strtolower($pc['label'] ?? 'a discount')) ?></h2>
-    <p>Plus tips for your first nights on a contour pillow. No spam, unsubscribe anytime.</p>
+    <p>Plus tips for finding your height in the first nights. No spam, unsubscribe anytime.</p>
     <form data-subscribe="popup" novalidate>
       <label class="sr-only" for="pp-email">Email address</label>
       <input id="pp-email" type="email" name="email" autocomplete="email" placeholder="you@example.com" required>

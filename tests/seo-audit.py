@@ -2,7 +2,7 @@
 import re, sys, urllib.request
 from html.parser import HTMLParser
 BASE = sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1:8080'
-PAGES = {'/find-your-fit': 'neck pillow', '/': 'orthopedic', '/product/mars-pillow': 'contour memory foam pillow', '/faq': 'orthopedic pillow', '/about': 'neck pillow', '/contact': 'contact',
+PAGES = {'/find-your-fit': 'pillow height', '/': 'adjustable', '/product/mars-pillow': 'adjustable memory foam pillow', '/faq': 'pillow', '/about': 'adjustable pillow', '/contact': 'contact',
          '/shipping-policy': 'shipping', '/returns': 'return', '/privacy-policy': 'privacy', '/terms-of-service': 'terms', '/accessibility': 'accessibility'}
 class P(HTMLParser):
     def __init__(s): super().__init__(); s.h=[]; s.cur=None; s.text=[]; s.links=[]; s.skip=0; s.title=''; s.desc=''; s.intitle=False; s.inmain=False

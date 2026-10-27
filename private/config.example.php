@@ -26,53 +26,7 @@ return [
         'currency'         => 'USD',
     ],
 
-    // Products and bundles. Prices are ALWAYS taken from here on the server,
-    // never from the browser. Prices are in whole US dollars.
-    'offers' => [
-        'mars-pillow' => [
-            'id' => 'single', 'name' => 'Mars Pillow', 'price' => 99, 'compare_at_price' => null,
-            'short' => 'One contoured memory foam pillow with a washable cover.',
-            'includes' => ['1 Mars Pillow', 'Washable cover included'],
-            'units' => ['p'], 'badge' => null, 'image' => 'assets/img/product-single.jpg',
-            'amazon_url' => '', // [TODO] paste the Amazon listing link; leave empty to hide the button
-        ],
-        'mars-sleep-pack' => [
-            'id' => 'sleep-pack', 'name' => 'Mars Sleep Pack', 'price' => 129, 'compare_at_price' => 138,
-            'short' => 'One pillow plus a spare Mars Cover, so one is always fresh.',
-            'includes' => ['1 Mars Pillow', '1 extra Mars Cover'],
-            'units' => ['p', 'c'], 'badge' => null, 'image' => 'assets/img/product-sleep-pack.jpg',
-            'amazon_url' => '',
-        ],
-        'mars-twin-pack' => [
-            'id' => 'twin-pack', 'name' => 'Mars Twin Pack', 'price' => 179, 'compare_at_price' => 198,
-            'short' => 'Two pillows, one for each side of the bed.',
-            'includes' => ['2 Mars Pillows', 'One for each side of the bed'],
-            'units' => ['p', 'p'], 'badge' => 'Most Popular', 'image' => 'assets/img/product-twin-pack.jpg',
-            'amazon_url' => '',
-        ],
-        'interstellar-suite' => [
-            'id' => 'interstellar', 'name' => 'Interstellar Suite', 'price' => 229, 'compare_at_price' => 276,
-            'short' => 'Two pillows and two spare covers for the whole bed.',
-            'includes' => ['2 Mars Pillows', '2 extra Mars Covers'],
-            'units' => ['p', 'p', 'c', 'c'], 'badge' => 'Best Value', 'image' => 'assets/img/product-interstellar.jpg',
-            'amazon_url' => '',
-        ],
-    ],
-    'default_offer' => 'mars-twin-pack',
-
-    // Product details shown on the product page. Fill in to match the real product.
-    'product' => [
-        'layers' => [
-            ['name' => 'Breathable cover', 'text' => 'Soft knit you can zip off and wash. [TODO fabric]'],
-            ['name' => 'Cooling layer',    'text' => 'Helps move heat away from your face and neck. [TODO]'],
-            ['name' => 'Memory foam core', 'text' => 'Slow-recovery foam that softens under your head and stays firm under your neck.'],
-            ['name' => 'Contour base',     'text' => 'The wave shape that gives the pillow its two heights. [TODO]'],
-        ],
-        'size'      => '[TODO] 24 x 14 in, 4.3 in / 3.5 in contour heights',
-        'weight'    => '[TODO] 3.3 lb',
-        'materials' => '[TODO] Cover: 60% polyester, 40% viscose. Core: CertiPUR-US® certified memory foam (only if certified).',
-        'care'      => 'Unzip the cover and machine wash it cold on a gentle cycle, then air dry. Do not wash the foam core. Air it out instead. [TODO confirm]',
-    ],
+    // Products, bundles, prices, pillow details and the comparison table are in private/catalog.php
 
     'db' => [
         // Hostinger: hPanel > Databases > MySQL Databases
@@ -151,19 +105,4 @@ return [
         'cart_reminder_hours' => 3,    // hours after someone leaves a cart to remind them
     ],
 
-    // "Mars vs. the big brand" table on the product page and the ad landing page.
-    // Only facts you can prove. Update the date and prices whenever you check them.
-    'comparison' => [
-        'brand'      => 'TEMPUR-Neck',
-        'checked_on' => '2026-10-26',
-        'source_url' => 'https://www.tomsguide.com/mattresses/pillows-bedding/tempur-pedic-tempur-neck-pillow-review',
-        'rows' => [
-            ['Price (one pillow)', '$99', '$119–$159 list price'],
-            ['Sleep trial', '60 nights', 'No trial'],
-            ['Warranty', '3 years', '5 years'],
-            ['Heights', 'Two heights in one pillow', 'Choose one of 3 sizes'],
-            ['Cover', 'Zip-off, machine washable', 'Removable knit cover'],
-            ['Shipping', 'Free in the US', 'Free in the US'],
-        ],
-    ],
 ];

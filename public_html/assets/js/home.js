@@ -70,7 +70,7 @@
       const gy = (l1.bottom + l2.top) / 2;
       base.holder.copy(D.worldAt(camera, 0, -((gy - r.top) / ch) * 2 + 1, 0));
       const upp = (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z) / ch;
-      const targetPx = Math.min(cw * (cw < 600 ? .78 : .5), 640);
+      const targetPx = Math.min(cw * (cw < 600 ? .66 : .48), 620);
       holder.scale.setScalar((targetPx * upp) / 6.4);
       const top = D.worldAt(camera, 0, cw < 600 ? -.93 : -.76, -30);
       base.mars.set(top.x, top.y - MR, -30);
@@ -131,41 +131,43 @@
   }
 
   /* ================= INSIDE: exploded 3D layers ================= */
+  const LF = D ? D.LAYER_F : { soft: [8 / 14, 1], fine: [6 / 14, 8 / 14], firm: [0, 6 / 14] };
   const LAYERS = [
     { name: 'COVER', f: [0, 1], color: 0xF5F3FF, wire: true },
-    { name: 'COOLING', f: [0.86, 1], color: 0x8CCBEA, emissive: 0x1d4f6a },
-    { name: 'FOAM CORE', f: [0.3, 0.86], color: 0xE6DEFF },
-    { name: 'CONTOUR BASE', f: [0, 0.3], color: 0x6E5FA8 },
+    { name: 'SOFT LAYER', f: LF.soft, color: 0xEDE6FF },
+    { name: 'FINE-TUNE LAYER', f: LF.fine, color: 0xF2A07A, emissive: 0x6a2a10 },
+    { name: 'FIRM LAYER', f: LF.firm, color: 0x6E5FA8 },
   ];
-  const OFF3 = [3.1, 1.55, 0, -1.45];
+  const label = i => (i === 0 ? LAYERS[0].name : `L/0${i} ${LAYERS[i].name}`);
+  const OFF3 = [2.75, 1.3, .62, 0];
   const exState = { p: 0 };
   const lis = [...document.querySelectorAll('#layerList li')];
-  const setOn = n => lis.forEach((li, i) => li.classList.toggle('on', i <= n));
+  const setOn = n => lis.forEach((li, i) => li.classList.toggle('on', i < n));
   const exEl = $('#exploded'), exCv = $('#exCanvas'), callouts = $('#callouts');
   if (exEl && D && D.webgl) {
     const renderer = D.makeRenderer(exCv);
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(30, 1, .1, 100);
-    camera.position.set(0, 4.2, 15.5); camera.lookAt(0, .5, 0);
+    camera.position.set(0, 4.6, 15.5); camera.lookAt(0, 1.05, 0);
     D.stdLights(scene);
     const group = new THREE.Group(); scene.add(group); group.rotation.set(.18, -.75, 0);
     const meshes = LAYERS.map(L => {
-      const geo = D.pillowGeometry({ f1: L.f[0], f2: L.f[1], N: 80, M: L.wire ? 26 : 50, inflate: L.wire ? .045 : 0 });
+      const geo = D.pillowGeometry({ f1: L.f[0], f2: L.f[1], N: L.wire ? 30 : 64, M: L.wire ? 40 : 64, inflate: L.wire ? .05 : 0 });
       const mat = L.wire ? new THREE.MeshBasicMaterial({ color: L.color, wireframe: true, transparent: true, opacity: .32 })
         : new THREE.MeshStandardMaterial({ color: L.color, roughness: .8, emissive: L.emissive || 0x000000, emissiveIntensity: .35 });
       const m = new THREE.Mesh(geo, mat); group.add(m);
-      m.userData.anchor = new THREE.Vector3(1.95, 1.25 * D.h(.2) * L.f[1] * .7, 0);
+      m.userData.anchor = new THREE.Vector3(D.DIM.Wd / 2, (L.f[0] + L.f[1]) / 2 * D.DIM.H, D.DIM.D * .25);
       return m;
     });
     const poreArr = new Float32Array(900 * 3);
-    for (let k = 0; k < poreArr.length; k += 3) { const t = Math.random(), v = Math.random(), tp = Math.pow(Math.sin(Math.PI * v), .22); poreArr[k] = (t - .5) * 4 * (0.9 + .1 * tp); poreArr[k + 1] = 1.25 * D.h(t) * tp * .86 + .012; poreArr[k + 2] = (v - .5) * 6.2; }
+    for (let k = 0; k < poreArr.length; k += 3) { const t = .04 + Math.random() * .92, v = .04 + Math.random() * .92; poreArr[k] = (t - .5) * D.DIM.Wd; poreArr[k + 1] = D.topY(t, v, LF.soft[0], LF.soft[1]) + .012; poreArr[k + 2] = (v - .5) * D.DIM.D; }
     const poreGeo = new THREE.BufferGeometry(); poreGeo.setAttribute('position', new THREE.BufferAttribute(poreArr, 3));
-    meshes[2].add(new THREE.Points(poreGeo, new THREE.PointsMaterial({ color: 0x5B4B8A, size: .045, transparent: true, opacity: .7 })));
+    meshes[1].add(new THREE.Points(poreGeo, new THREE.PointsMaterial({ color: 0x5B4B8A, size: .045, transparent: true, opacity: .7 })));
     let cw = 1, ch = 1, visible = false;
     const size = () => { const r = exEl.getBoundingClientRect(); cw = r.width; ch = r.height; renderer.setSize(cw, ch, false); camera.aspect = cw / ch; camera.updateProjectionMatrix(); callouts.setAttribute('viewBox', `0 0 ${cw} ${ch}`); };
     size(); window.addEventListener('resize', size);
     new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(exEl);
-    callouts.innerHTML = LAYERS.map((L, i) => `<g opacity="0"><circle r="3.5" fill="#E8743B"/><line stroke="#E8743B" stroke-width="1"/><text text-anchor="end">L/0${i + 1} ${L.name}</text></g>`).join('');
+    callouts.innerHTML = LAYERS.map((L, i) => `<g opacity="0"><circle r="3.5" fill="#E8743B"/><line stroke="#E8743B" stroke-width="1"/><text text-anchor="end">${label(i)}</text></g>`).join('');
     const cGroups = [...callouts.children], tmp = new THREE.Vector3();
     const ease = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
     let tAcc = 0, last = performance.now();
@@ -192,27 +194,54 @@
     })();
   } else if (exEl && D) {
     const fb = $('#exFallback'); fb.hidden = false; exCv.hidden = true;
-    const OFF = [-150, -60, 20, 100], fills = ['url(#pgFront)', 'url(#pgCool)', 'url(#pgFoam)', 'url(#pgBase)'];
-    fb.innerHTML = `<svg viewBox="0 -170 ${D.W + 150} 400">${D.DEFS}${LAYERS.map((L, i) => `<g transform="translate(0 ${OFF[i]})"><path d="${D.slab(L.f[0], L.f[1])}" fill="${fills[i]}" ${i === 0 ? 'fill-opacity=".2" stroke="#F5F3FF" stroke-dasharray="4 4"' : ''}/><text class="tag" x="${D.W + 10}" y="${D.pt(.2, L.f[1])[1]}">L/0${i + 1} ${L.name}</text></g>`).reverse().join('')}</svg>`;
+    const OFF = [-205, -100, -48, 0], fills = ['url(#pgFront)', 'url(#pgFoam)', 'url(#pgCool)', 'url(#pgBase)'];
+    fb.innerHTML = `<svg viewBox="0 -170 ${D.W + 150} 400">${D.DEFS}${LAYERS.map((L, i) => `<g transform="translate(0 ${OFF[i]})"><path d="${D.slab(L.f[0], L.f[1])}" fill="${fills[i]}" ${i === 0 ? 'fill-opacity=".2" stroke="#F5F3FF" stroke-dasharray="4 4"' : ''}/><text class="tag" x="${D.W + 10}" y="${D.pt(0, (L.f[0] + L.f[1]) / 2)[1] + 5}">${label(i)}</text></g>`).reverse().join('')}</svg>`;
   }
 
   /* ================= Spine diagrams ================= */
   function spineSVG(el, good) {
     if (!el) return [];
+    // side view: the pillow is a block. Too low (bad) lets the head drop; the right height (good) keeps the neck level.
+    const top = good ? 134 : 154, x = 22, w = 150, hh = 168 - top;
     const pill = good
-      ? `<path d="M30 168 C30 128 52 118 74 126 C96 134 104 142 120 142 C140 142 150 128 168 128 C182 128 190 150 190 168Z" fill="url(#pgFront)" opacity=".95"/>`
-      : `<rect x="20" y="138" width="160" height="30" rx="15" fill="#8F84BF" opacity=".85"/>`;
-    const headY = good ? 100 : 86;
+      ? `<rect x="${x}" y="${168 - hh * 6 / 14}" width="${w}" height="${hh * 6 / 14}" rx="4" fill="url(#pgBase)"/>
+         <rect x="${x}" y="${168 - hh * 8 / 14}" width="${w}" height="${hh * 2 / 14}" fill="url(#pgCool)"/>
+         <rect x="${x}" y="${top}" width="${w}" height="${hh * 6 / 14}" rx="4" fill="url(#pgFoam)"/>`
+      : `<rect x="${x}" y="${top}" width="${w}" height="${hh}" rx="5" fill="#8F84BF" opacity=".85"/>`;
+    const headY = top - 34;
     el.innerHTML = `${D ? D.DEFS : ''}<line x1="0" y1="168" x2="360" y2="168" stroke="rgba(245,243,255,.18)"/>${pill}
       <rect x="150" y="112" width="230" height="56" rx="26" fill="#2B3560"/>
-      <path d="M92 ${headY + 10} Q130 ${good ? 112 : 102} 160 118 L160 150 Q120 ${good ? 146 : 150} 92 ${headY + 34}Z" fill="#2B3560"/>
+      <path d="M92 ${headY + 10} Q130 ${good ? 112 : 118} 160 118 L160 150 Q120 ${good ? 146 : 152} 92 ${headY + 34}Z" fill="#2B3560"/>
       <circle cx="74" cy="${headY}" r="34" fill="#3A4577"/>
-      <g class="vert">${Array.from({ length: 9 }, (_, i) => `<circle cx="${104 + i * 28}" cy="${128 - Math.max(0, 4 - i) * 6.5}" r="5.5" fill="${good ? '#E8743B' : '#F08A8A'}"/>`).join('')}</g>
+      <g class="vert">${Array.from({ length: 9 }, (_, i) => `<circle cx="${104 + i * 28}" cy="${128 + Math.max(0, 4 - i) * 5.5}" r="5.5" fill="${good ? '#E8743B' : '#F08A8A'}"/>`).join('')}</g>
       <line x1="96" y1="128" x2="350" y2="128" stroke="${good ? '#8FD3B5' : '#F08A8A'}" stroke-dasharray="5 6" opacity=".7"/>`;
     return [...el.querySelectorAll('.vert circle')];
   }
   spineSVG($('#spineBad'), false);
   const goodVerts = spineSVG($('#spineGood'), true);
+
+  /* ================= Build your height ================= */
+  const bStage = $('#bStage');
+  if (bStage) {
+    const opts = [...document.querySelectorAll('.b-opt')], soft = bStage.querySelector('.soft'), fine = bStage.querySelector('.fine'), firm = bStage.querySelector('.firm');
+    // which layers are in the stack for each height (index into product.heights)
+    const USE = [[1, 0, 0], [1, 1, 0], [1, 0, 1], [1, 1, 1]];
+    const pick = (i, focus) => {
+      opts.forEach((o, k) => { o.setAttribute('aria-checked', k === i ? 'true' : 'false'); o.tabIndex = k === i ? 0 : -1; });
+      const [a, b, c] = USE[i];
+      soft.classList.toggle('off', !a); fine.classList.toggle('off', !b); firm.classList.toggle('off', !c);
+      $('#bIn').textContent = opts[i].dataset.in; $('#bHow').textContent = opts[i].dataset.how;
+      if (focus) opts[i].focus();
+    };
+    opts.forEach((o, i) => {
+      o.addEventListener('click', () => pick(i));
+      o.addEventListener('keydown', e => {
+        const d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+        if (d) { e.preventDefault(); pick((i + d + opts.length) % opts.length, true); }
+      });
+    });
+    pick(3);
+  }
 
   /* ================= Night calendar ================= */
   const moonsEl = $('#moons');

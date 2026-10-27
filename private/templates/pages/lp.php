@@ -6,10 +6,10 @@ $stats = reviews_stats();
 <header class="band lp-hero">
   <div class="wrap lp-grid">
     <div class="lp-copy">
-      <span class="eyebrow">For side and back sleepers</span>
-      <h1 class="lp-title">Your pillow leaves a gap under your neck. <em>This one fills it.</em></h1>
+      <span class="eyebrow">For side, back and stomach sleepers</span>
+      <h1 class="lp-title">One height doesn't fit every neck. <em>This pillow adjusts.</em></h1>
       <?php if ($stats['count']): ?><p class="rating-line"><?= stars($stats['avg']) ?> <b><?= e(number_format($stats['avg'], 1)) ?></b> from <?= (int)$stats['count'] ?> verified review<?= $stats['count'] === 1 ? '' : 's' ?></p><?php endif; ?>
-      <p class="lede">The Mars Pillow is a contoured memory foam pillow with two heights: a lower edge for back sleepers and a higher edge that fills the space between your shoulder and your head.</p>
+      <p class="lede">The Mars Pillow is an adjustable memory foam pillow. Three removable layers give you four heights, and a soft side and a firm side let you choose the feel. Set it once to fit your shoulders and the way you sleep.</p>
       <ul class="lp-points">
         <li><b><?= $nights ?> nights</b> to decide, or send it back</li>
         <li><b><?= $years ?>-year</b> warranty</li>
@@ -21,7 +21,7 @@ $stats = reviews_stats();
       <?php if ($video): ?>
         <video src="/assets/video/lp.mp4" autoplay muted loop playsinline preload="metadata" poster="/assets/img/pillow-render.webp" aria-label="Video of a hand pressing the Mars Pillow"></video>
       <?php else: ?>
-        <img src="/assets/img/pillow-render.webp" alt="The Mars Pillow, a contoured memory foam pillow with a higher and a lower edge" width="1200" height="800" fetchpriority="high">
+        <img src="/assets/img/pillow-render.webp" alt="The Mars Pillow, an adjustable memory foam pillow with three layers" width="1200" height="800" fetchpriority="high">
       <?php endif; ?>
     </div>
   </div>
@@ -29,12 +29,12 @@ $stats = reviews_stats();
 
 <section class="band" aria-labelledby="lp-why">
   <div class="wrap">
-    <div class="section-head"><h2 id="lp-why">Why sleepers switch to a contour pillow</h2></div>
+    <div class="section-head"><h2 id="lp-why">Why sleepers switch to an adjustable pillow</h2></div>
     <div class="benefits">
-      <div class="benefit"><h3>1. No more neck gap</h3><p>A flat pillow lets your head sink and your neck bend. The neck roll fills that space.</p></div>
-      <div class="benefit"><h3>2. Two heights</h3><p>Lower edge for back sleeping, higher edge for side sleeping. Turn it to switch.</p></div>
+      <div class="benefit"><h3>1. Your height, not ours</h3><p>A one-size pillow is too low or too high for many people. Add or remove a layer until your neck is straight.</p></div>
+      <div class="benefit"><h3>2. Soft or firm</h3><p>One side gently sinks, the other holds you up. Flip the pillow to switch.</p></div>
       <div class="benefit"><h3>3. Memory foam that recovers</h3><p>It softens under your head and slowly returns to shape every morning.</p></div>
-      <div class="benefit"><h3>4. Washable cover</h3><p>Zip it off and machine wash it. The foam stays fresh inside.</p></div>
+      <div class="benefit"><h3>4. Square 90° edge</h3><p>It sits close to your shoulder and fills the gap under your neck.</p></div>
     </div>
   </div>
 </section>
@@ -55,6 +55,6 @@ $stats = reviews_stats();
   <div class="wrap narrow">
     <h2 id="lp-faq">Before you order</h2>
     <?php foreach (array_slice(faqs(), 0, 6) as $f): ?><details><summary><?= e($f['q']) ?></summary><p><?= todo($f['a']) ?></p></details><?php endforeach; ?>
-    <p class="fine" style="margin-top:20px">Not sure which edge is for you? <a href="/find-your-fit">Take the 30-second pillow finder</a>.</p>
+    <p class="fine" style="margin-top:20px">Not sure which height is for you? <a href="/find-your-fit">Take the 30-second pillow finder</a>.</p>
   </div>
 </section>

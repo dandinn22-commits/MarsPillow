@@ -215,7 +215,7 @@
     if (!hasGsap || REDUCED || !cartBtn || !window.MP3D) { done(); return; }
     const from = fromEl.getBoundingClientRect(), to = cartBtn.getBoundingClientRect();
     const fly = document.createElement('div'); fly.className = 'flyer';
-    fly.innerHTML = `<svg viewBox="0 0 ${MP3D.W} 170" aria-hidden="true"><path d="${MP3D.slab(0, 1)}" fill="#E4DDF8"/><path d="${MP3D.slab(0, .12)}" fill="#8F84BF"/></svg>`;
+    fly.innerHTML = `<svg viewBox="0 0 ${MP3D.W} 170" aria-hidden="true"><path d="${MP3D.slab(0, 6 / 14)}" fill="#7C6CB4"/><path d="${MP3D.slab(6 / 14, 8 / 14)}" fill="#E8743B"/><path d="${MP3D.slab(8 / 14, 1)}" fill="#E4DDF8"/></svg>`;
     document.body.appendChild(fly);
     const sx = from.left + from.width / 2 - 35, sy = from.top - 20, ex = to.left + to.width / 2 - 35, ey = to.top + to.height / 2 - 14;
     gsap.set(fly, { x: sx, y: sy, scale: 1.4, rotate: 0 });

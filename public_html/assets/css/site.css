@@ -577,3 +577,26 @@ code { font-family: var(--font-mono); font-size: .9em; background: rgba(245,243,
 @media (max-width: 860px) { .lp-grid { grid-template-columns: 1fr; } .lp-media { order: -1; } }
 .quiz-info { margin-top: 40px; }
 .quiz, .quiz-result { margin-top: 28px; }
+
+/* ---------- Build your height ---------- */
+.builder { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+.b-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 26px 0 14px; }
+.b-opt { text-align: left; border: 1px solid var(--line); background: var(--glass); color: var(--star); border-radius: 14px; padding: 14px 16px; cursor: pointer; display: grid; gap: 2px; font: inherit; transition: border-color .2s, background .2s; }
+.b-opt b { font-family: var(--font-display); font-size: 1.6rem; font-weight: 400; line-height: 1.1; }
+.b-opt span { color: var(--mist); font-size: .88rem; line-height: 1.35; }
+.b-opt:hover { border-color: rgba(242,160,122,.5); }
+.b-opt[aria-checked="true"] { border-color: var(--mars); background: rgba(232,116,59,.12); }
+.b-opt:focus-visible { outline: 2px solid var(--mars-soft); outline-offset: 3px; }
+.b-stage { position: relative; border: 1px solid var(--line); border-radius: var(--radius); padding: 40px 32px 28px; background: radial-gradient(120% 90% at 50% 100%, rgba(91,75,138,.45), rgba(11,19,43,.4)); min-height: 360px; display: flex; flex-direction: column; justify-content: flex-end; }
+.b-ruler { position: absolute; top: 26px; right: 30px; text-align: right; }
+.b-ruler span { font-family: var(--font-display); font-size: 4.2rem; line-height: 1; color: var(--mars-soft); }
+.b-ruler small { margin-left: 4px; color: var(--mist); font-family: var(--font-mono); }
+.b-stack { display: flex; flex-direction: column; justify-content: flex-end; height: 230px; perspective: 600px; }
+.b-layer { --h: 66px; height: var(--h); margin-top: 6px; border-radius: 10px; display: flex; align-items: center; padding: 0 16px; font-family: var(--font-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; overflow: hidden; transition: height .5s cubic-bezier(.2,.8,.2,1), margin .5s, opacity .4s, transform .5s; transform-origin: bottom; box-shadow: 0 10px 30px -14px rgba(0,0,0,.6); }
+.b-layer.soft { background: linear-gradient(180deg, #F5F1FF, #C9BEEA); color: #2B2350; }
+.b-layer.fine { --h: 24px; background: linear-gradient(90deg, #F2A07A, #E8743B); color: #3A1606; font-size: .62rem; }
+.b-layer.firm { background: linear-gradient(180deg, #7C6CB4, #3E3366); color: var(--star); }
+.b-layer.off { height: 0; margin-top: 0; opacity: 0; transform: translateY(-30px) rotateX(20deg); }
+.b-how { margin-top: 16px; color: var(--mist); font-size: .95rem; }
+@media (max-width: 860px) { .builder { grid-template-columns: 1fr; gap: 28px; } .b-stage { min-height: 320px; } }
+@media (prefers-reduced-motion: reduce) { .b-layer { transition: none; } }
