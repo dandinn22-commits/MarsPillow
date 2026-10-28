@@ -164,7 +164,7 @@
     const poreGeo = new THREE.BufferGeometry(); poreGeo.setAttribute('position', new THREE.BufferAttribute(poreArr, 3));
     meshes[1].add(new THREE.Points(poreGeo, new THREE.PointsMaterial({ color: 0x5B4B8A, size: .045, transparent: true, opacity: .7 })));
     let cw = 1, ch = 1, visible = false;
-    const size = () => { const r = exEl.getBoundingClientRect(); cw = r.width; ch = r.height; renderer.setSize(cw, ch, false); camera.aspect = cw / ch; camera.updateProjectionMatrix(); callouts.setAttribute('viewBox', `0 0 ${cw} ${ch}`); };
+    const size = () => { const r = exEl.getBoundingClientRect(); cw = r.width; ch = r.height; renderer.setSize(cw, ch, false); camera.aspect = cw / ch; camera.fov = camera.aspect < 1 ? THREE.MathUtils.radToDeg(2 * Math.atan(.255 / camera.aspect)) : 30; camera.updateProjectionMatrix(); callouts.setAttribute('viewBox', `0 0 ${cw} ${ch}`); };
     size(); window.addEventListener('resize', size);
     new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(exEl);
     callouts.innerHTML = LAYERS.map((L, i) => `<g opacity="0"><circle r="3.5" fill="#E8743B"/><line stroke="#E8743B" stroke-width="1"/><text text-anchor="end">${label(i)}</text></g>`).join('');
@@ -272,9 +272,12 @@
 
   setOn(0);
   gsap.matchMedia().add({ wide: '(min-width: 861px)', narrow: '(max-width: 860px)' }, c => {
+    // desktop: pin the whole section. phone: pin just the 3D view under the header so every layer stays on screen while it opens
+    const head = document.getElementById('nav');
+    const top = c.conditions.narrow ? Math.round((head ? head.getBoundingClientRect().height : 64) + 8) : 0;
     gsap.fromTo(exState, { p: 0 }, { p: 1, ease: 'none', scrollTrigger: {
-      trigger: '#insideStage', start: c.conditions.wide ? 'center center' : 'top 80px',
-      end: c.conditions.wide ? '+=1500' : '+=700', scrub: .8, pin: c.conditions.wide ? '#inside' : false,
+      trigger: c.conditions.wide ? '#insideStage' : '#exploded', start: c.conditions.wide ? 'center center' : `top ${top}px`,
+      end: c.conditions.wide ? '+=1500' : '+=800', scrub: .8, pin: c.conditions.wide ? '#inside' : '#exploded',
       onUpdate: s => setOn(Math.min(3, Math.floor(s.progress * 4.2))),
     } });
   });

@@ -147,7 +147,14 @@ p { margin: 0; }
 .callouts text { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; fill: var(--star); }
 .exploded .fallback svg { width: 100%; height: auto; overflow: visible; }
 .tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; fill: var(--star); }
-@media (max-width: 860px) { .inside-stage { grid-template-columns: 1fr; min-height: 0; gap: 24px; } .exploded { order: -1; } }
+@media (max-width: 860px) {
+  .inside-stage { grid-template-columns: 1fr; min-height: 0; gap: 0; }
+  .inside-stage > div:first-child { display: contents; }
+  .inside-stage .eyebrow { order: 1; }
+  .inside-stage h2 { order: 2; margin-bottom: 18px; }
+  .exploded { order: 3; aspect-ratio: 1 / 1.45; max-height: calc(100svh - 96px); width: 100%; margin-inline: auto; z-index: 2; background: radial-gradient(90% 70% at 50% 50%, rgba(91,75,138,.35), rgba(11,19,43,.94) 75%); border-radius: var(--radius); }
+  .inside-stage .layer-list { order: 4; margin-top: 18px; }
+}
 
 /* spine */
 .spine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
