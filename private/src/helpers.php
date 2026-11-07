@@ -13,6 +13,9 @@ function cfg(string $key, $default = null)
 }
 
 function is_live(): bool { return cfg('mode') === 'live'; }
+/** A payment key is usable when it is filled in and is not a placeholder. */
+function key_ready($k): bool { return is_string($k) && $k !== '' && !str_contains($k, 'TODO') && !str_contains($k, 'xxx'); }
+function card_payments_ready(): bool { return key_ready(stripe_keys()['secret_key'] ?? ''); }
 
 /** Escape for HTML output. Use for every value printed into a page. */
 function e($v): string { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }

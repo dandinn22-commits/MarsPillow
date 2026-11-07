@@ -9,6 +9,6 @@
 <?= $body ?>
 </td></tr>
 <tr><td style="padding:18px 4px;color:#A9A3C9;font-size:12px;line-height:1.5">
-<?= e(cfg('site.business_name')) ?> · <?= e(preg_replace('/\[TODO[^\]]*\]/', '', (string)cfg('site.business_address'))) ?><br>
+<?= e(cfg('company.legal_name')) ?> · <?= e(cfg('company.address')) ?><br>
 Questions? Reply to this email or write to <a style="color:#F2A07A" href="mailto:<?= e(cfg('site.support_email')) ?>"><?= e(cfg('site.support_email')) ?></a>.
 </td></tr></table></td></tr></table></body></html>

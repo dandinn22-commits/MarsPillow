@@ -24,7 +24,7 @@ function order_create_pending(array $cart, string $method): array
         q('INSERT INTO orders (order_number, status, payment_method, currency, subtotal_cents, shipping_cents, discount_cents, coupon_code, total_cents, marketing_consent, created_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $num, 'pending', $method, 'USD', (int)round($cart['subtotal'] * 100), (int)round($cart['shipping'] * 100),
-            (int)round(($cart['discount'] ?? 0) * 100), $cart['coupon']['code'] ?? null, (int)round($cart['total'] * 100), (($_COOKIE['mp_consent'] ?? '') === 'yes') ? 1 : 0, now_utc(),
+            (int)round(($cart['discount'] ?? 0) * 100), $cart['coupon']['code'] ?? null, (int)round($cart['total'] * 100), ((($_COOKIE['mp_consent'] ?? '') === 'yes') && ($_SERVER['HTTP_SEC_GPC'] ?? '') !== '1') ? 1 : 0, now_utc(),
         ]);
         $id = (int)$pdo->lastInsertId();
         foreach ($cart['lines'] as $l) {

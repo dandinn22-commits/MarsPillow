@@ -75,7 +75,7 @@ $productFaqs = array_values(array_filter(faqs(), fn($f) => in_array($f['cat'], [
         <p>Sleep with the soft layer on top for a gentle, sinking feel. Flip the pillow so the firm layer is on top for more support. Side sleepers often start with the firm side.</p>
       </div>
       <div class="tabpanel" role="tabpanel" id="panel-materials" aria-labelledby="tab-materials" tabindex="0">
-        <h3>Materials</h3><p><?= todo($p['materials']) ?></p>
+        <h3>Materials</h3><p><?= todo($p['materials']) ?> <?= e(cfg('company.origin')) ?>.</p>
         <h3>Care</h3><p><?= todo($p['care']) ?></p>
         <p class="fine">New memory foam can have a light smell for a day or two. Let it air out in a ventilated room.</p>
       </div>
@@ -87,6 +87,7 @@ $productFaqs = array_values(array_filter(faqs(), fn($f) => in_array($f['cat'], [
           <div><dt>Layers</dt><dd><?= e(implode(' + ', array_map(fn($l) => $l['in'] . ' in', $p['layers']))) ?>, all removable</dd></div>
           <div><dt>Fits</dt><dd>Standard pillowcases <?= todo('[TODO confirm]') ?></dd></div>
           <div><dt>Best for</dt><dd>Side, back and stomach sleepers</dd></div>
+          <div><dt>Origin</dt><dd><?= e(cfg('company.origin')) ?></dd></div>
         </dl>
       </div>
       <div class="tabpanel faq" role="tabpanel" id="panel-faq" aria-labelledby="tab-faq" tabindex="0">

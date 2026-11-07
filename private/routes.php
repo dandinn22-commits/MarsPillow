@@ -90,7 +90,7 @@ if ($path === '/checkout' && $method === 'GET') {
     $meta['scripts'] = ['assets/js/checkout.js'];
     $pp = paypal_keys()['client_id'] ?? '';
     $meta['paypal_client_id'] = (str_contains($pp, 'TODO') || $pp === '') ? '' : $pp;
-    page('pages/checkout', $meta, ['cart' => $cart]);
+    page('pages/checkout', $meta, ['cart' => $cart, 'cardReady' => card_payments_ready()]);
 }
 
 if ($path === '/checkout/stripe' && $method === 'POST') {
@@ -98,6 +98,7 @@ if ($path === '/checkout/stripe' && $method === 'POST') {
     $cart = cart_summary();
     if (!$cart['lines']) redirect('/cart');
     if (!rate_limit('checkout', 20, 600)) { flash('Too many attempts. Please wait a few minutes and try again.', 'error'); redirect('/checkout'); }
+    if (!card_payments_ready()) { flash('Card payments are being set up. Please try again soon.', 'error'); redirect('/checkout'); }
     try {
         $order = order_create_pending($cart, 'stripe');
         $_SESSION['last_order'] = $order['id'];

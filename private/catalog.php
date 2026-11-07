@@ -4,6 +4,22 @@
  * Not secret, so it lives here (in git) instead of config.php. Values here override config.php.
  */
 return [
+    // Company and policy facts shown on the site, in emails and in the legal pages.
+    'company' => [
+        'legal_name'     => 'Mars Pillow, LLC',
+        'address'        => 'Poalei HaRakevet 29, Givatayim 5325422, Israel',
+        'state'          => 'Delaware',                 // where the LLC is registered
+        'returns_email'  => 'returns@marspillows.com',  // returns, exchanges and warranty claims
+        'origin'         => 'Imported',                 // country-of-origin wording for the website (the sewn label says "Made in China")
+        'legal_updated'  => 'November 8, 2026',
+        'min_nights'     => 14,     // nights before a trial return is accepted
+        'refund_days'    => 7,      // business days to refund after the return arrives
+        'damage_days'    => 7,      // days to report a damaged or wrong item
+        'handling_days'  => '1–2',  // business days to pack an order
+        'delivery_days'  => '3–7',  // business days in transit
+        'cancel_hours'   => 12,     // hours after ordering in which a customer can cancel online by email
+    ],
+
     // Products and bundles. Prices are ALWAYS taken from here on the server,
     // never from the browser. Prices are in whole US dollars.
     'offers' => [

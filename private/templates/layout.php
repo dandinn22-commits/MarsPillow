@@ -141,7 +141,7 @@ window.MP = <?= json_encode([
       </div>
     </div>
     <p class="disclaimer">This product is not intended to diagnose, treat, cure or prevent any disease. If you have ongoing neck or back pain, talk to your doctor.</p>
-    <p class="disclaimer">© <?= date('Y') ?> <?= e(cfg('site.business_name')) ?> · <?= todo((string)cfg('site.business_address')) ?> · <a href="mailto:<?= e(cfg('site.support_email')) ?>"><?= e(cfg('site.support_email')) ?></a></p>
+    <p class="disclaimer">© <?= date('Y') ?> <?= e(cfg('company.legal_name')) ?> · <?= e(cfg('company.address')) ?> · <a href="mailto:<?= e(cfg('site.support_email')) ?>"><?= e(cfg('site.support_email')) ?></a></p>
   </div>
 </footer>
 

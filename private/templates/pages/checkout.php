@@ -1,4 +1,4 @@
-<?php /** @var array $cart  @var array $meta */ ?>
+<?php /** @var array $cart  @var array $meta  @var bool $cardReady */ $cardReady = $cardReady ?? true; ?>
 <div class="band page-pad">
   <div class="wrap narrow-wide">
     <h1 class="page-title">Secure checkout</h1>
@@ -7,6 +7,7 @@
         <h2 id="pay-h">How would you like to pay?</h2>
         <p class="fine">You'll enter your shipping address and payment details on the payment provider's secure page. We never see or store your card number.</p>
 
+<?php if ($cardReady): ?>
         <form method="post" action="/checkout/stripe" class="pay-option">
           <?= csrf_field() ?>
           <button type="submit" class="btn btn-primary btn-block magnetic">
@@ -15,6 +16,9 @@
           </button>
           <p class="fine">Visa, Mastercard, American Express, Discover and more, processed securely by Stripe.</p>
         </form>
+        <?php else: ?>
+        <p class="notice" role="status">Card payments are being set up and will be available very soon. You can pay with PayPal below, or email <a href="mailto:<?= e(cfg('site.support_email')) ?>"><?= e(cfg('site.support_email')) ?></a> and we'll let you know when card checkout opens.</p>
+        <?php endif; ?>
 
         <div class="or"><span>or</span></div>
 

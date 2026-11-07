@@ -128,11 +128,14 @@
     // a cookie too, so the server knows whether it may send the purchase to Meta
     document.cookie = 'mp_consent=' + v + ';path=/;max-age=31536000;SameSite=Lax' + (location.protocol === 'https:' ? ';Secure' : '');
     if (consent) consent.hidden = true;
-    if (v === 'yes') track.load();
+    if (v === 'yes' && !gpc) track.load();
     document.dispatchEvent(new Event('mp:consent'));
   };
+  // Global Privacy Control: the visitor's browser asks us not to share data for advertising, so nothing optional loads
+  const gpc = navigator.globalPrivacyControl === true;
   const c = store.get('mp_consent');
-  if (c === 'yes') track.load(); else if (!c && consent) consent.hidden = false;
+  if (gpc) { if (consent) consent.hidden = true; }
+  else if (c === 'yes') track.load(); else if (!c && consent) consent.hidden = false;
   $$('[data-consent]').forEach(b => b.addEventListener('click', () => setConsent(b.dataset.consent)));
   const cs = $('#cookieSettings'); if (cs && consent) cs.addEventListener('click', () => { consent.hidden = false; consent.querySelector('button').focus(); });
 

@@ -83,7 +83,7 @@ function schema_organization(): array
     return [
         '@context' => 'https://schema.org', '@type' => 'Organization',
         'name' => cfg('site.name'), 'url' => url('/'), 'logo' => url('/assets/img/logo-square.png'),
-        'email' => cfg('site.support_email'),
+        'email' => cfg('site.support_email'), 'legalName' => cfg('company.legal_name'),
     ];
 }
 
@@ -110,6 +110,8 @@ function schema_product(): array
                 '@type' => 'MerchantReturnPolicy', 'applicableCountry' => 'US',
                 'returnPolicyCategory' => 'https://schema.org/MerchantReturnFiniteReturnWindow',
                 'merchantReturnDays' => (int)cfg('site.trial_nights', 60),
+                'returnMethod' => 'https://schema.org/ReturnByMail',
+                'returnFees' => 'https://schema.org/ReturnShippingFees',
             ],
         ];
     }
@@ -161,8 +163,8 @@ function faqs(): array
         ['cat' => 'Using your orthopedic pillow', 'q' => 'Does a new memory foam pillow smell?', 'a' => 'New memory foam can have a light smell for a day or two. Let it air out in a ventilated room.'],
         ['cat' => 'Care', 'q' => 'How do I wash the Mars Pillow?', 'a' => 'Unzip the cover and machine wash it cold on a gentle cycle, then air dry. Do not wash the foam layers. Air them out instead. [TODO confirm]'],
         ['cat' => 'Care', 'q' => 'Will a standard pillowcase fit?', 'a' => 'The pillow is 23.6 x 15.7 in, so a standard pillowcase usually fits. [TODO confirm]'],
-        ['cat' => 'Trial, returns and warranty', 'q' => 'How does the ' . $n . '-night trial work?', 'a' => 'Sleep on your Mars Pillow for up to ' . $n . ' nights. If it is not right for you, contact us and we will arrange a return. [TODO return terms]'],
-        ['cat' => 'Trial, returns and warranty', 'q' => 'What does the ' . $w . '-year warranty cover?', 'a' => 'The pillow comes with a ' . $w . '-year warranty against manufacturing defects. [TODO what is covered]'],
+        ['cat' => 'Trial, returns and warranty', 'q' => 'How does the ' . $n . '-night trial work?', 'a' => 'Sleep on your Mars Pillow for at least ' . (int)cfg('company.min_nights') . ' nights and try a few heights. If it is not right for you within ' . $n . ' nights of delivery, email ' . cfg('company.returns_email') . ' and we will send return instructions. Return shipping is paid by you, and we refund the price you paid within ' . (int)cfg('company.refund_days') . ' business days after the pillow arrives. One trial return per household. Pillows bought on Amazon follow Amazon\'s return policy.'],
+        ['cat' => 'Trial, returns and warranty', 'q' => 'What does the ' . $w . '-year warranty cover?', 'a' => 'The ' . $w . '-year limited warranty covers defects in materials and workmanship, such as foam that permanently loses its shape (a dent deeper than 1 inch that does not recover) or a zipper that fails. It does not cover normal softening, stains or damage from washing the foam. Email ' . cfg('company.returns_email') . ' with your order number and photos, and we will replace the defective part or the pillow.'],
         ['cat' => 'Orders and shipping', 'q' => 'How fast does my order ship?', 'a' => 'Every order ships free within the US and arrives in ' . $d . ' business days.'],
         ['cat' => 'Orders and shipping', 'q' => 'Which payment methods do you accept?', 'a' => 'You can pay with all major credit and debit cards through Stripe, or with PayPal. Your card details are entered on the payment provider\'s secure page, not on our site.'],
         ['cat' => 'Orders and shipping', 'q' => 'Do you ship outside the United States?', 'a' => 'Not yet. We currently ship to addresses in the United States only.'],
