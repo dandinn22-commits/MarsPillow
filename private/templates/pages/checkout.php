@@ -17,7 +17,7 @@
           <p class="fine">Visa, Mastercard, American Express, Discover and more, processed securely by Stripe.</p>
         </form>
         <?php else: ?>
-        <p class="notice" role="status">Card payments are being set up and will be available very soon. You can pay with PayPal below, or email <a href="mailto:<?= e(cfg('site.support_email')) ?>"><?= e(cfg('site.support_email')) ?></a> and we'll let you know when card checkout opens.</p>
+        <p class="notice" role="status">Card payments are being set up and will be available very soon. <?= !empty($meta['paypal_client_id']) ? 'You can pay with PayPal below, or email' : 'Email' ?> <a href="mailto:<?= e(cfg('site.support_email')) ?>"><?= e(cfg('site.support_email')) ?></a> and we'll let you know when card checkout opens.</p>
         <?php endif; ?>
 
         <div class="or"><span>or</span></div>
