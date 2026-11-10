@@ -46,7 +46,7 @@
           <?php else: ?>
             <form method="post" action="/cart" class="coupon-row"><?= csrf_field() ?><input type="hidden" name="action" value="coupon"><label class="sr-only" for="code">Discount code</label><input id="code" name="code" placeholder="Discount code" autocomplete="off" maxlength="40"><button class="btn btn-ghost btn-sm" type="submit">Apply</button></form>
           <?php endif; ?>
-          <a class="btn btn-primary magnetic" href="/checkout">Go to secure checkout</a>
+          <a class="btn btn-primary magnetic" href="/checkout" data-lead-event="checkout">Go to secure checkout</a>
           <p class="fine">Includes the <?= $nights ?>-night trial and <?= (int)cfg('site.warranty_years') ?>-year warranty. Pay by card or PayPal.</p>
           <a class="fine" href="/product/mars-pillow">← Keep shopping</a>
         </aside>

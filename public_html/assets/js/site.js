@@ -103,11 +103,13 @@
       }
     },
     addToCart(o, qty) {
+      if (window.leadAlert) leadAlert('add_to_cart', { item: o.name, qty: qty, value: o.price * qty, currency: 'USD' }, 'cart-' + o.id + '-' + qty);
       if (!this.ready) return;
       if (window.gtag) gtag('event', 'add_to_cart', { currency: 'USD', value: o.price * qty, items: [{ item_id: o.id, item_name: o.name, price: o.price, quantity: qty }] });
       if (window.fbq) fbq('track', 'AddToCart', { currency: 'USD', value: o.price * qty, content_ids: [o.id], content_type: 'product' });
     },
     purchase(p) {
+      if (p && window.leadAlert) { try { if (!localStorage.getItem('lt_p_' + p.id)) { localStorage.setItem('lt_p_' + p.id, '1'); leadAlert('purchase', { order: p.id, value: p.value, currency: 'USD', item: p.items.map(i => i.name + ' ×' + i.qty).join(', ') }, 'purchase-' + p.id); } } catch (e) { leadAlert('purchase', { order: p.id, value: p.value, currency: 'USD' }, 'purchase-' + p.id); } }
       if (!this.ready || !p) return;
       const key = 'mp_tracked_' + p.id; if (store.get(key)) return; store.set(key, '1');
       const t = MP.tracking || {};

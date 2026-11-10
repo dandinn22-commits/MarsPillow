@@ -45,7 +45,7 @@ function mp_send_security_headers(): void
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data: blob: $paypal https://www.google-analytics.com https://www.googletagmanager.com $gads https://www.facebook.com",
-        "connect-src 'self' $paypal https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com $gads https://pagead2.googlesyndication.com https://www.facebook.com https://connect.facebook.net",
+        "connect-src 'self' $paypal https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com $gads https://pagead2.googlesyndication.com https://www.facebook.com https://connect.facebook.net https://script.google.com https://script.googleusercontent.com",
         "frame-src $paypal https://td.doubleclick.net https://www.googletagmanager.com",
         "form-action 'self' https://checkout.stripe.com",
         "base-uri 'self'",

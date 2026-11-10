@@ -152,7 +152,7 @@ window.MP = <?= json_encode([
   <div class="drawer-foot">
     <div class="subtotal"><span id="subtotalLabel">Subtotal</span><span id="subtotal">$0</span></div>
     <p class="fine">Free shipping within the US. Taxes calculated at checkout.</p>
-    <a class="btn btn-primary" id="checkoutBtn" href="/checkout">Go to secure checkout</a>
+    <a class="btn btn-primary" id="checkoutBtn" href="/checkout" data-lead-event="checkout">Go to secure checkout</a>
     <a class="btn btn-ghost" href="/cart">View full cart</a>
   </div>
 </aside>
@@ -188,6 +188,7 @@ window.MP = <?= json_encode([
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="<?= e(asset('assets/js/lead-alerts.js')) ?>" data-brand="Mars Pillow" defer></script>
 <script src="<?= e(asset('assets/js/site.js')) ?>" defer></script>
 <script nonce="<?= e($n) ?>">
 /* Page scripts load after the page is ready. On slow phones ("lite" mode) the 3D library is skipped
